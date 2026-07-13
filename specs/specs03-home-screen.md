@@ -4,7 +4,7 @@
 
 ## Purpose
 
-The Home Screen is the primary landing experience after successful authentication.
+The Home Screen is the primary landing experience after MyDo opens its local database.
 
 Its purpose is to orient the user toward the work that matters most today while providing immediate access to task capture and navigation throughout the application.
 
@@ -52,7 +52,7 @@ Home Screen
 │ Status Bar                    │
 ├───────────────────────────────┤
 │ Top App Bar                   │
-│  Profile      Search          │
+│  Menu         Search          │
 ├───────────────────────────────┤
 │ Today                         │
 │ Monday, January 15            │
@@ -76,14 +76,10 @@ Home Screen
 
 # Initial State
 
-After login:
+On launch:
 
 ```
-Authenticate
-
-↓
-
-Synchronize
+Open Local Database
 
 ↓
 
@@ -110,23 +106,16 @@ Provides access to global application functions.
 
 ### Components
 
-- Profile avatar
-- Current workspace (if applicable)
+- Settings or overflow menu
 - Search
 - Notifications (optional)
 - Overflow menu
 
 ---
 
-## Profile
+## Menu
 
-Selecting the profile avatar opens:
-
-- Account
-- Productivity
-- Settings
-- Help
-- Log Out
+Selecting the settings or overflow menu opens Productivity, Settings, and Help. MyDo has no profile, account, or logout action.
 
 ---
 
@@ -198,7 +187,6 @@ Each task may display:
 - Priority indicator
 - Labels
 - Project
-- Assignee
 - Recurrence indicator
 - Attachment indicator
 - Comment count
@@ -259,7 +247,7 @@ Secondary actions may include navigating to Upcoming or Inbox.
 
 # Loading State
 
-Shown while synchronizing data.
+Shown while local task data is loading.
 
 Characteristics:
 
@@ -267,7 +255,7 @@ Characteristics:
 - Disabled interactions where necessary
 - Progress indicator
 
-Previously cached content may remain visible until fresh data is available.
+Previously loaded local content may remain visible while the query is refreshed.
 
 ---
 
@@ -287,14 +275,13 @@ The user should still be able to access locally cached tasks when available.
 
 # Refresh Behavior
 
-The Home Screen supports manual and automatic refresh.
+The Home Screen can refresh its local query.
 
 Triggers include:
 
 - Pull to refresh
 - App resume
-- Successful synchronization
-- Background sync completion
+- Local task changes
 
 The refresh operation should preserve scroll position whenever possible.
 
@@ -341,21 +328,13 @@ Displays encouragement and task creation affordance.
 
 ## Loading
 
-Data synchronization in progress.
-
----
-
-## Offline
-
-Cached content displayed.
-
-New tasks and edits are queued for synchronization.
+Local task data is loading.
 
 ---
 
 ## Error
 
-Data unavailable due to synchronization or server failure.
+Data unavailable due to a local database error.
 
 Retry action provided.
 
@@ -368,9 +347,9 @@ Retry action provided.
 | Tap task | Open Task Detail |
 | Tap checkbox | Complete task |
 | Tap FAB | Open Task Composer |
-| Pull to refresh | Synchronize data |
+| Pull to refresh | Reload local data |
 | Tap Search | Open Search |
-| Tap Profile | Open account menu |
+| Tap Menu | Open settings menu |
 | Tap Notification | Open Notifications |
 | Scroll | Browse task list |
 
@@ -393,11 +372,11 @@ The Home Screen should:
 
 The Home Screen should:
 
-- Render cached content immediately after launch
+- Render local content immediately after launch
 - Support smooth scrolling through large task lists
 - Lazily load off-screen content
-- Synchronize updates without interrupting user interaction
-- Reflect task completion instantly, with background synchronization following
+- Apply local updates without interrupting user interaction
+- Reflect task completion instantly
 
 ---
 
@@ -413,7 +392,7 @@ Home
 │
 ├── Notifications
 │
-├── Profile
+├── Menu
 │      └── Settings
 │
 └── Floating Action Button

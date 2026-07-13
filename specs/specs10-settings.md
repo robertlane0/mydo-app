@@ -4,438 +4,111 @@
 
 ## Purpose
 
-The Settings module provides centralized management of user preferences, account configuration, application behavior, synchronization, notifications, appearance, and privacy.
-
-Settings should allow users to customize the application without affecting the integrity of task data.
+Settings manages local MyDo preferences, reminder behavior, appearance, privacy, and manual data portability. MyDo has no account, remote configuration, sync service, subscription, or connected session.
 
 ---
 
 # Goals
 
-The Settings module allows users to:
-
-- Manage account information
-- Configure application preferences
-- Control notifications
-- Customize appearance
-- Manage synchronization
-- Configure productivity features
-- Access help and support
-- Log out
+- Configure local application preferences.
+- Control locally scheduled notifications.
+- Customize appearance and productivity features.
+- Import and export the local database manually.
+- Make destructive local-data actions clear and confirmable.
 
 ---
 
-# Navigation
+# Navigation and Layout
+
+Settings is accessed from the main overflow menu or a settings icon.
 
 ```
-Application
-
-↓
-
-Profile
-
-↓
-
 Settings
-
-├── Account
 ├── General
 ├── Notifications
 ├── Appearance
 ├── Productivity
-├── Integrations
-├── Sync
+├── Data
 ├── Privacy
 ├── Help
 └── About
 ```
 
-Settings are typically accessed from the user's profile or account menu.
-
----
-
-# Screen Layout
-
-```
-┌────────────────────────────────────┐
-│ ← Settings                         │
-├────────────────────────────────────┤
-│ Account                            │
-│ General                            │
-│ Notifications                      │
-│ Appearance                         │
-│ Productivity                       │
-│ Integrations                       │
-│ Synchronization                    │
-│ Privacy                            │
-│ Help                               │
-│ About                              │
-│                                    │
-│ Log Out                            │
-└────────────────────────────────────┘
-```
-
----
-
-# Account
-
-Displays user profile information.
-
-Typical fields:
-
-| Property | Editable |
-|-----------|----------|
-| Name | Yes |
-| Email | Limited |
-| Avatar | Yes |
-| Password | Yes |
-| Subscription | View |
-| Workspace | View |
-
-Available actions:
-
-- Change password
-- Update profile
-- Manage subscription
-- Delete account
-
 ---
 
 # General
 
-Controls application-wide behavior.
-
-Typical options:
-
-- Default start screen
-- Default task priority
-- Default reminder
-- Date format
-- Time format
-- Week start day
-- Language
-- Time zone
-
-Changes take effect immediately unless otherwise specified.
+Options include default start screen, default task priority, default reminder, date and time formats, week start day, language, and time zone. Changes take effect locally and immediately unless otherwise specified.
 
 ---
 
 # Notifications
 
-Controls notification delivery.
-
-Options may include:
-
-- Task reminders
-- Push notifications
-- Email notifications
-- Assignment alerts
-- Comment notifications
-- Mention notifications
-- Daily summaries
-
-Each setting may be independently enabled or disabled.
+Controls local task reminders and daily summaries. MyDo schedules notifications on the device; it provides no push, email, assignment, comment, or mention notifications.
 
 ---
 
 # Appearance
 
-Allows visual customization.
-
-Typical settings:
-
-- Light theme
-- Dark theme
-- System theme
-- Accent color
-- Dynamic color (supported devices)
-- Font size
-- Compact mode
-
-Theme changes should apply immediately throughout the application.
+Options include light, dark, and system themes; accent or dynamic color; font size; and compact mode. Theme changes apply immediately.
 
 ---
 
 # Productivity
 
-Controls productivity-related features.
-
-Examples:
-
-- Daily goal
-- Karma tracking
-- Completed task visibility
-- Weekend visibility
-- Smart scheduling
-- Streak tracking
-
-These settings influence user experience without modifying task data.
+Options may include daily goal, completed-task visibility, weekend visibility, smart scheduling, and streak tracking. These settings affect only the local experience.
 
 ---
 
-# Integrations
+# Data
 
-Displays connected services.
+Data settings make the local database portable and recoverable.
 
-Examples:
+| Action | Result |
+|---|---|
+| Export local database | Creates a complete MyDo backup and opens the system save/share chooser. |
+| Import local database | Opens a file chooser, validates a MyDo backup, then asks whether to replace or merge local data. |
+| Clear local data | Requires explicit confirmation and offers export first. |
 
-- Calendar
-- Email
-- Voice assistants
-- Automation platforms
-- Cloud storage
+Exports include tasks, projects, sections, labels, filters, reminders, completion history, and preferences. They use a versioned format with integrity metadata. Export is manual and never uploads data.
 
-Users may:
-
-- Connect
-- Disconnect
-- Configure permissions
-
----
-
-# Synchronization
-
-Displays synchronization status.
-
-Information includes:
-
-- Last synchronization
-- Sync progress
-- Pending offline changes
-- Account status
-
-Available actions:
-
-```
-Sync Now
-```
-
-```
-Retry Synchronization
-```
+Before importing, MyDo validates the selected file. An invalid or unreadable file leaves the current local database unchanged. Replacing data requires a warning and, when possible, a fresh backup. A merge must not silently overwrite an existing edit; unresolved conflicts are reported.
 
 ---
 
 # Privacy
 
-Privacy options may include:
-
-- Analytics participation
-- Crash reporting
-- Personalization
-- Data export
-- Data deletion
-- Connected sessions
-
-Users should be able to review and revoke active sessions.
+Privacy options include analytics participation, crash reporting, local-data export, and local-data deletion. MyDo does not collect account information because it has no accounts.
 
 ---
 
-# Help
+# Help and About
 
-Support resources include:
-
-- Documentation
-- FAQ
-- Contact support
-- Report a bug
-- Feature requests
-
-External resources may open in a browser.
+Help includes documentation, FAQ, bug reporting, and feature requests. About displays version, build number, license information, open-source acknowledgements, and privacy information.
 
 ---
 
-# About
+# Loading and Error States
 
-Displays application information.
-
-Typical fields:
-
-- Version
-- Build number
-- License information
-- Open-source acknowledgements
-- Terms of Service
-- Privacy Policy
-
----
-
-# Log Out
-
-Selecting Log Out displays a confirmation dialog.
-
-Flow:
-
-```
-Settings
-
-↓
-
-Log Out
-
-↓
-
-Confirm
-
-↓
-
-Clear Session
-
-↓
-
-Welcome Screen
-```
-
-Unsynchronized changes should be uploaded before session termination whenever possible.
-
----
-
-# Delete Account
-
-Where supported:
-
-```
-Settings
-
-↓
-
-Delete Account
-
-↓
-
-Authentication
-
-↓
-
-Confirmation
-
-↓
-
-Permanent Removal
-```
-
-Users should receive clear warnings before irreversible actions.
-
----
-
-# Loading State
-
-Displayed while settings are retrieved.
-
-Characteristics:
-
-- Placeholder rows
-- Loading indicators
-- Disabled controls
-
-Previously cached settings should remain visible when possible.
-
----
-
-# Offline State
-
-Users may:
-
-- View cached settings
-- Modify local preferences
-- Queue supported changes
-
-Account-related operations requiring server validation may be unavailable.
-
----
-
-# Error State
-
-Possible causes:
-
-- Synchronization failure
-- Permission issues
-- Server unavailable
-
-Recovery options:
-
-- Retry
-- Continue with cached settings
-- Return to previous screen
-
----
-
-# User Interactions
-
-| Action | Result |
-|----------|--------|
-| Select setting | Open detail screen |
-| Toggle switch | Update preference |
-| Change theme | Apply immediately |
-| Change language | Apply immediately or after restart |
-| Sync Now | Start synchronization |
-| Log Out | Confirm logout |
-| Delete Account | Begin account deletion flow |
+Settings loads from local storage. If the database cannot be opened, show a clear explanation and offer retry or recovery options. Import and export failures explain the cause—such as unsupported format, insufficient storage, permission denial, or write error—without changing the existing local data.
 
 ---
 
 # Accessibility
 
-Settings should:
-
-- Expose all controls with descriptive labels
-- Support keyboard navigation
-- Announce switch states
-- Preserve focus after returning from detail screens
-- Respect system font scaling
-- Maintain sufficient color contrast
-
----
-
-# Performance Requirements
-
-The Settings module should:
-
-- Open immediately from cached configuration
-- Apply local preference changes instantly
-- Synchronize remote preferences in the background
-- Avoid unnecessary application restarts
-- Preserve navigation state when returning from nested settings
+All controls expose descriptive labels, announce switch states, support keyboard navigation, preserve focus after returning from detail screens, respect font scaling, and maintain sufficient contrast. Import, export, and destructive-data confirmations provide a clearly labelled cancel action.
 
 ---
 
 # Business Rules
 
-- Preference changes persist across devices where supported by synchronization.
-- Local-only preferences affect only the current device.
-- Sensitive operations require user confirmation.
-- Account deletion is irreversible once confirmed.
-- Logging out clears local authentication tokens while preserving synchronized data on the server.
-
----
-
-# Navigation Summary
-
-```
-Settings
-
-├── Account
-├── General
-├── Notifications
-├── Appearance
-├── Productivity
-├── Integrations
-├── Synchronization
-├── Privacy
-├── Help
-├── About
-└── Log Out
-```
+- Preferences persist in the local database and affect only this installation.
+- Sensitive local-data operations require confirmation.
+- Import and export are explicit file operations; neither happens automatically.
+- MyDo does not sign in, sign out, synchronize, upload, or connect to a MyDo server.
 
 ---
 
 # Success Criteria
 
-The Settings module succeeds when users can:
-
-- Easily customize application behavior
-- Manage their account securely
-- Configure notifications and appearance to match personal preferences
-- Monitor synchronization health
-- Access support resources without leaving the application
-- Perform sensitive account actions with appropriate safeguards and confirmation
+Users can customize MyDo, manage local reminders and appearance, manually export a complete backup, safely import a backup, and understand any local-data risk before confirming a destructive action.

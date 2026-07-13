@@ -13,7 +13,7 @@ This document outlines the end-to-end sequences for critical user actions. The f
 1. **Frictionless Capture:** Adding a task should take no more than one tap and typing.
 2. **Forgiving Interactions:** Destructive or state-changing actions (like completing a task) must offer a brief "Undo" window.
 3. **Contextual Awareness:** Actions taken within a specific view (e.g., adding a task while inside the "Groceries" project) should automatically inherit that view's context.
-4. **Graceful Degradation:** Core flows must function entirely offline and sync seamlessly when a connection is restored.
+4. **Local-First:** Core flows must function entirely without connectivity and persist changes to the local database immediately.
 
 ---
 
@@ -23,7 +23,6 @@ The central input loop of the application, optimized for speed.
 
 ## Preconditions
 
-* User is authenticated.
 * User is on any primary navigation screen.
 
 ## Steps
@@ -40,18 +39,18 @@ The central input loop of the application, optimized for speed.
 * "#Work" is assigned to the Work project.
 
 
-5. **Manual Override (Optional):** User taps the action row above the keyboard to manually assign labels, priority flags, or collaborators.
+5. **Manual Override (Optional):** User taps the action row above the keyboard to manually assign labels or priority flags.
 6. **Submission:** User taps the "Submit" arrow button.
 7. **Resolution:**
 * Bottom sheet collapses.
 * A Snackbar confirms: "Task Added to Work [Undo]".
-* The task is optimistically injected into the local UI before server confirmation.
+* The task is committed to the local database and injected into the local UI.
 
 
 
 ## Edge Cases
 
-* **Offline:** Task is saved locally and marked for background sync.
+* **No connection:** Task is saved locally; no sync or later network action is required.
 * **Empty Input:** The "Submit" button remains disabled (greyed out) until at least one character is typed.
 
 ---
@@ -121,10 +120,10 @@ Upon landing in the new project, the user is presented with the **Empty State**:
 Across all flows, the system handles errors predictably:
 
 * **Validation Errors:** Handled inline. If a user attempts to save an invalid project name, the text field border turns red, and helper text appears below the field.
-* **Network Errors (Fetch):** If the app fails to load a view (e.g., tapping into a project with no local cache and no network), an **Error State** is displayed featuring:
-* An offline illustration.
-* Text: "Unable to connect."
+* **Local Database Errors (Fetch):** If the app cannot load a view from the local database, an **Error State** is displayed featuring:
+* A local-data illustration.
+* Text: "Unable to open local data."
 * A primary "Retry" button.
 
 
-* **Network Errors (Mutation):** If a user action fails to sync (e.g., assigning a collaborator while on a weak connection), the action is queued locally. No error is shown to the user unless the action fundamentally cannot be completed upon reconnection.
+* **Local Database Errors (Mutation):** If a local save fails, MyDo preserves the unsaved draft when possible, explains the error, and offers retry. It never queues a network mutation.

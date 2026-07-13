@@ -1,450 +1,115 @@
-# /specs/02-authentication.md
+# /specs/02-local-storage.md
 
-# Authentication Specification
+# Local Storage and Data Portability Specification
 
 ## Purpose
 
-The Authentication module establishes the user's identity, restores previous sessions, and provides secure access to synchronized data.
-
-Authentication should be designed to minimize friction while maintaining account security.
+MyDo has no accounts, authentication, subscriptions, remote services, or automatic synchronization. It opens directly into the app and stores all application data in a local database on the device.
 
 ---
 
 # Goals
 
-The authentication system allows users to:
-
-- Create an account
-- Sign in
-- Restore previous sessions
-- Recover forgotten passwords
-- Log out
-- Synchronize account data across devices
+- Open without sign-up, sign-in, profile creation, or network access.
+- Persist tasks, projects, labels, filters, reminders, and preferences locally.
+- Let the user manually export a complete database backup to a chosen location.
+- Let the user manually import a validated MyDo backup from a chosen location.
 
 ---
 
-# User Flows
+# Launch Flow
 
 ```
 Launch App
-
 ↓
-
-Session Exists?
-
-├── Yes
-│      ↓
-│  Validate Session
-│      ↓
-│  Enter Application
-│
-└── No
-       ↓
- Authentication
-```
-
----
-
-# Entry Points
-
-Authentication may be entered from:
-
-- First application launch
-- Manual logout
-- Session expiration
-- Token invalidation
-- Account removal
-
----
-
-# Authentication Screens
-
-## Welcome
-
-### Purpose
-
-Introduce the application and present authentication options.
-
-### Primary Actions
-
-- Log In
-- Sign Up
-
-### Secondary Actions
-
-- Privacy Policy
-- Terms of Service
-
----
-
-## Login
-
-### Purpose
-
-Authenticate an existing account.
-
-### Required Fields
-
-| Field | Required |
-|---------|----------|
-| Email | Yes |
-| Password | Yes |
-
-### Primary Action
-
-```
-Log In
-```
-
-### Secondary Actions
-
-- Forgot Password
-- Back
-- Sign Up
-
----
-
-## Registration
-
-### Purpose
-
-Create a new account.
-
-### Required Fields
-
-| Field | Required |
-|---------|----------|
-| Name | Yes |
-| Email | Yes |
-| Password | Yes |
-
-Optional fields may include:
-
-- Marketing preferences
-- Referral information
-
----
-
-## Password Recovery
-
-### Purpose
-
-Allow users to regain account access.
-
-### Required Field
-
-Email address.
-
-### Flow
-
-```
-Enter Email
-
+Open Local Database
 ↓
-
-Validate
-
-↓
-
-Send Reset Email
-
-↓
-
-Confirmation Screen
+Restore Previous Destination
 ```
 
+On first launch, MyDo creates an empty local database and opens the Inbox. No login, registration, password-recovery, or session screen is shown.
+
 ---
 
-## Session Restoration
+# Local Database
 
-If a valid authentication token exists:
+The database is the source of truth for the current installation. Task and preference changes commit locally when saved. The core experience must work with network connectivity disabled.
+
+The app should use platform-protected storage and may encrypt the database where platform support is available. Deleting the app or clearing its storage can remove the database, so Settings must make manual export easy to discover.
+
+---
+
+# Export Flow
+
+Entry point: **Settings → Data → Export local database**.
 
 ```
-Launch
-
+Choose Export
 ↓
-
-Restore Credentials
-
+Create Complete Backup
 ↓
-
-Validate Token
-
+Choose Save/Share Location
 ↓
+Show Success or Error
+```
 
-Download Latest State
+An export contains the complete local database needed to restore MyDo: task hierarchy, projects, sections, labels, filters, reminders, completion history, and preferences. The format includes a version and integrity metadata. Export never transmits data to a MyDo service.
 
+---
+
+# Import Flow
+
+Entry point: **Settings → Data → Import local database**.
+
+```
+Choose Backup File
 ↓
-
-Open Previous Screen
-```
-
-This process should occur automatically.
-
----
-
-# Validation Rules
-
-## Email
-
-Requirements:
-
-- Non-empty
-- Valid email format
-- Trim whitespace
-- Normalize casing where appropriate
-
-Examples:
-
-```
-user@example.com
-
-Valid
-```
-
-```
-user@
-
-Invalid
-```
-
----
-
-## Password
-
-Requirements:
-
-- Non-empty
-- Minimum security requirements defined by backend
-- Stored securely
-- Never displayed in plain text by default
-
----
-
-# Authentication States
-
-## Logged Out
-
-Characteristics:
-
-- No synchronized data
-- Authentication screens visible
-- Protected routes unavailable
-
----
-
-## Authenticating
-
-Characteristics:
-
-- Inputs disabled
-- Progress indicator shown
-- Duplicate submissions prevented
-
----
-
-## Authenticated
-
-Characteristics:
-
-- Session established
-- User profile loaded
-- Synchronization begins
-
----
-
-## Session Expired
-
-Characteristics:
-
-- User notified
-- Credentials invalidated
-- Return to Login screen
-
----
-
-# Error States
-
-## Invalid Credentials
-
-Displayed when authentication fails.
-
-Message:
-
-```
-Incorrect email or password.
-```
-
-Actions:
-
-- Retry
-- Reset Password
-
----
-
-## Network Error
-
-Displayed when the server cannot be reached.
-
-Available actions:
-
-- Retry
-- Continue offline (if supported)
-
----
-
-## Server Error
-
-Displayed when authentication services are unavailable.
-
-Actions:
-
-- Retry
-- Cancel
-
----
-
-# Logout Flow
-
-```
-Settings
-
+Validate Format and Integrity
 ↓
-
-Logout
-
+Choose Replace or Merge
 ↓
-
-Confirmation
-
+Confirm
 ↓
-
-Clear Local Session
-
+Import into Local Database
 ↓
-
-Return to Welcome
+Refresh Local Views
 ```
 
----
+MyDo validates the selected backup before changing data and shows its format version and creation time when available. Invalid, corrupt, inaccessible, or unsupported files leave the current database unchanged.
 
-# Session Management
-
-The application maintains:
-
-- Access token
-- Refresh token
-- Session expiration
-- User profile
-- Synchronization metadata
-
-Sensitive credentials should never be exposed through the UI.
+**Replace local data** creates a fresh backup first when possible, then replaces all local data. **Merge with local data**, if offered, preserves existing data and adds imported records without silently overwriting an edit; unresolved ID conflicts are reported. The confirmation explains that import is local-only and can only be reversed by importing another backup.
 
 ---
 
-# Automatic Login
+# Data States and Errors
 
-If stored credentials remain valid:
+## Empty Database
 
-```
-Launch
+Show the normal empty Inbox with actions to add a task or import a backup.
 
-↓
+## Database Unavailable
 
-Silent Authentication
+Explain that local data could not be opened and offer retry, recovery export when possible, or reset after explicit confirmation.
 
-↓
+## Import Error
 
-Refresh Session
+Explain the failure—unsupported format, integrity failure, or read error—and leave the existing local data unchanged.
 
-↓
+## Export Error
 
-Restore Previous Navigation State
-```
-
-The user should not be prompted unnecessarily.
-
----
-
-# Offline Behavior
-
-If authentication has already been established:
-
-Users may:
-
-- View cached data
-- Create tasks
-- Complete tasks
-- Edit tasks
-
-Synchronization resumes when connectivity returns.
-
-If no valid session exists, online authentication is required.
-
----
-
-# Security Requirements
-
-Authentication must ensure:
-
-- HTTPS communication
-- Secure credential storage
-- Token expiration handling
-- Protection against replay attacks
-- Session invalidation after logout
-
-Passwords are never stored in plaintext.
+Explain the failure—insufficient storage, permission denied, or write error—and leave the existing local data unchanged.
 
 ---
 
 # Accessibility
 
-Authentication screens should:
-
-- Support screen readers
-- Provide descriptive labels
-- Expose validation errors programmatically
-- Maintain logical keyboard navigation
-- Preserve entered values after recoverable errors
-
----
-
-# Analytics Events
-
-Typical events include:
-
-| Event | Description |
-|--------|-------------|
-| login_started | User submits credentials |
-| login_success | Authentication succeeds |
-| login_failed | Authentication rejected |
-| signup_started | Registration begins |
-| signup_completed | Registration successful |
-| password_reset_requested | Reset email requested |
-| logout | Session terminated |
-
----
-
-# Navigation Summary
-
-```
-Welcome
-├── Login
-│      ├── Forgot Password
-│      └── Application
-│
-└── Sign Up
-       └── Application
-```
+Import and export controls, confirmations, progress, and errors must work with screen readers and keyboard navigation. Replacement confirmations must identify affected local data and expose a clearly labelled cancel action.
 
 ---
 
 # Success Criteria
 
-Authentication is considered successful when:
-
-- User identity is verified.
-- A valid session is established.
-- Initial synchronization completes.
-- The user is navigated to the main application.
-- Future launches restore the session without requiring additional login unless credentials have expired.
+- MyDo is usable immediately without identity or credentials.
+- Ordinary task actions work with connectivity disabled.
+- A complete local database can be manually exported and restored through import.
+- Import failures do not alter the current local database.

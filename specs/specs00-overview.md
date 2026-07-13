@@ -1,40 +1,33 @@
 # /specs/00-overview.md
 
-# Todoist Mobile App
+# MyDo Mobile App
 ## Product Specification Overview
 
 **Platform:** Android  
-**Source:** Decompiled APK analysis  
-**Version:** Derived from APK build 12206  
-**Document Version:** 1.0
+**Product model:** Free, local-only, account-free
 
 ---
 
 # Purpose
 
-Todoist is a personal and collaborative task management application centered around quickly capturing work, organizing it into projects, scheduling execution, and tracking completion across devices.
+MyDo is a personal task-management application for capturing work, organizing it into projects, scheduling execution, and tracking completion. It operates entirely on the device: all data is stored in a local database, with no account, cloud service, automatic sync, or collaboration features.
 
-The mobile application is optimized around three primary workflows:
+The primary workflows are:
 
 1. Capture something immediately.
 2. Organize work into projects.
 3. Complete work throughout the day.
-
-The application minimizes friction between these three actions while synchronizing state continuously with cloud services.
+4. Manually export a backup or import a backup when needed.
 
 ---
 
 # Product Goals
 
-The application is designed to help users:
-
-- Remember tasks
-- Organize projects
-- Plan upcoming work
-- Prioritize tasks
-- Track recurring work
-- Collaborate with others
-- Reduce cognitive overhead
+- Remember tasks and organize projects.
+- Plan upcoming and recurring work.
+- Work fully without network connectivity.
+- Keep data private and under the device owner's control.
+- Provide reliable, user-initiated local-database import and export.
 
 ---
 
@@ -42,61 +35,15 @@ The application is designed to help users:
 
 ## Individual
 
-Uses Todoist as a personal planner.
-
-Typical activities:
-
-- Grocery lists
-- Daily planning
-- Personal goals
-- Habit tracking
-- Bills
-- Appointments
-
----
+Uses MyDo as a personal planner for groceries, appointments, habits, bills, goals, and daily planning.
 
 ## Professional
 
-Uses Todoist to organize work.
-
-Typical activities:
-
-- Client work
-- Meetings
-- Deadlines
-- Sprint planning
-- Documentation
-- Personal productivity
-
----
-
-## Team Member
-
-Works inside shared projects.
-
-Typical activities:
-
-- Assigned tasks
-- Comments
-- Shared deadlines
-- Notifications
-- Collaboration
-
----
+Uses MyDo to organize personal work: meetings, deadlines, documentation, and client work.
 
 ## Power User
 
-Uses advanced planning features.
-
-Examples include:
-
-- Labels
-- Filters
-- Priority levels
-- Templates
-- Recurring schedules
-- Sections
-- Integrations
+Uses labels, filters, priority levels, templates, recurring schedules, sections, and manual backups.
 
 ---
 
@@ -104,51 +51,23 @@ Examples include:
 
 ## Capture First
 
-Users should never lose an idea.
-
 Creating a task is always one tap away.
-
----
 
 ## Organize Later
 
-Tasks may initially contain minimal information.
-
-Additional metadata can be added later.
-
----
+Tasks may start with only a title; metadata can be added later.
 
 ## Focus on Today
 
-The application continually surfaces work that requires immediate attention.
+Today, Upcoming, and overdue views surface work requiring attention.
 
-Examples:
+## Local Data Ownership
 
-- Today
-- Upcoming
-- Overdue
-
----
-
-## Everything Syncs
-
-Changes should synchronize automatically between:
-
-- Mobile
-- Desktop
-- Web
-- Wearables
-- Integrations
-
----
+The local database is the source of truth. MyDo never uploads data or synchronizes it automatically. The user may manually export a complete backup and manually import a MyDo backup.
 
 ## Fast Interaction
 
-Nearly every common action should require:
-
-- One tap
-- One swipe
-- Minimal typing
+Common actions should require minimal taps and typing.
 
 ---
 
@@ -156,32 +75,19 @@ Nearly every common action should require:
 
 ```
 Application
-
-├── Authentication
-│
 ├── Inbox
-│
 ├── Today
-│
 ├── Upcoming
-│
 ├── Projects
 │   ├── Sections
 │   └── Tasks
-│
 ├── Labels
-│
 ├── Filters
-│
 ├── Notifications
-│
 ├── Search
-│
-├── Activity
-│
 ├── Productivity
-│
 └── Settings
+    └── Data: Import / Export
 ```
 
 ---
@@ -190,212 +96,55 @@ Application
 
 ## Task
 
-Represents actionable work.
-
-Typical properties include:
-
-- Title
-- Description
-- Due date
-- Due time
-- Priority
-- Labels
-- Project
-- Section
-- Parent task
-- Assignee
-- Attachments
-- Comments
-- Completion status
-
----
+Actionable work with a title, description, due date/time, priority, labels, project, section, parent task, attachments, notes, reminders, and completion status.
 
 ## Project
 
-Container for related tasks.
-
-Projects may contain:
-
-- Sections
-- Tasks
-- Collaborators
-- Shared permissions
-- Color
-- Icon
-
----
+A local container for related tasks, with sections, color, and icon.
 
 ## Section
 
-Organizational grouping inside a project.
-
----
+An organizational grouping inside one project.
 
 ## Label
 
-Reusable categorization.
-
-Labels are independent of projects.
-
-Examples:
-
-- Work
-- Home
-- Phone
-- Waiting
-
----
+A reusable local categorization independent of projects.
 
 ## Filter
 
-Saved query that dynamically displays tasks matching specific conditions.
-
-Examples:
-
-- Today & P1
-- Overdue
-- Assigned to Me
-
----
-
-## Comment
-
-Conversation attached to a task.
-
-May include:
-
-- Text
-- Mentions
-- Attachments
-
----
+A saved local query that dynamically displays matching tasks.
 
 ## Reminder
 
-Notification associated with a task.
-
-Can be:
-
-- Time-based
-- Location-based (if supported)
-- Relative
+A locally scheduled notification associated with a task.
 
 ---
 
 # Major Application Modules
 
-## Authentication
+## Local Storage and Data Portability
 
-Responsible for:
-
-- Login
-- Registration
-- Password recovery
-- Session management
-
----
+Creates and maintains the on-device database and supports manual, validated import and export of complete backups.
 
 ## Task Management
 
-Responsible for:
-
-- Create
-- Edit
-- Complete
-- Delete
-- Schedule
-- Prioritize
-- Duplicate
-
----
+Creates, edits, completes, deletes, schedules, prioritizes, and duplicates tasks.
 
 ## Project Management
 
-Responsible for:
-
-- Create project
-- Edit project
-- Archive
-- Share
-- Invite members
-
----
+Creates, edits, archives, and deletes local projects and sections.
 
 ## Planning
 
-Responsible for:
-
-- Today
-- Upcoming
-- Calendar
-- Scheduling
-
----
-
-## Collaboration
-
-Responsible for:
-
-- Comments
-- Mentions
-- Assignments
-- Shared projects
-
----
+Provides Today, Upcoming, calendar, and scheduling views.
 
 ## Notifications
 
-Responsible for:
-
-- Reminders
-- Assignment notifications
-- Comments
-- Activity updates
-
----
+Provides local reminder notifications and preferences.
 
 ## Search
 
-Supports searching across:
-
-- Tasks
-- Projects
-- Labels
-- Comments
-
----
-
-## Productivity
-
-Provides:
-
-- Daily streaks
-- Completed tasks
-- Weekly summaries
-- Karma system (where available)
-
----
-
-# Navigation Model
-
-The application is organized around persistent navigation to primary destinations.
-
-Primary destinations include:
-
-- Inbox
-- Today
-- Upcoming
-- Projects
-- Search
-
-Secondary destinations include:
-
-- Notifications
-- Activity
-- Settings
-- Productivity
-
-Contextual screens are presented modally or via push navigation.
+Searches the local database across tasks, projects, labels, filters, and notes.
 
 ---
 
@@ -403,120 +152,46 @@ Contextual screens are presented modally or via push navigation.
 
 ```
 Launch App
-
 ↓
-
-Authenticate
-
+Open Local Database
 ↓
-
 View Today
-
 ↓
-
 Create Task
-
 ↓
-
 Assign Project
-
 ↓
-
 Add Due Date
-
 ↓
-
 Complete Task
-
 ↓
-
-Sync Changes
+Persist Changes Locally
 ```
 
 ---
 
-# Offline Behavior
+# Local Database, Import, and Export
 
-The application is expected to support:
+All ordinary task actions read and write the local database immediately, including when the device has no connectivity.
 
-- Viewing cached tasks
-- Creating tasks offline
-- Editing tasks offline
-- Completing tasks offline
-
-Changes are synchronized automatically when connectivity returns.
-
----
-
-# Synchronization Principles
-
-Synchronization should preserve:
-
-- Task edits
-- Completion state
-- Ordering
-- Comments
-- Project changes
-
-Conflict resolution should prioritize preserving user data.
+- **Export:** From Settings, the user chooses a destination for a complete, portable MyDo database backup. The backup contains tasks, projects, sections, labels, filters, reminders, completion history, and preferences.
+- **Import:** From Settings, the user selects a MyDo backup. MyDo validates it before changing data, then offers a confirmed replacement of local data or a non-destructive merge when supported.
+- Import and export are always manual; no data is sent to a MyDo server.
 
 ---
 
 # Security
 
-The application stores user-specific task information.
-
-Expected protections include:
-
-- Authenticated sessions
-- Secure network communication
-- Local encrypted storage where supported
-- Cloud synchronization over HTTPS
+MyDo protects personal task data through platform-protected local storage, optional local encryption where supported, and secure platform file-sharing flows for backups. The app has no sessions, credentials, accounts, or remote data store.
 
 ---
 
 # Accessibility Goals
 
-The application should support:
-
-- Screen readers
-- Dynamic text sizing
-- High contrast themes
-- Touch targets meeting Android accessibility guidance
-- Keyboard navigation where applicable
+The application supports screen readers, dynamic text sizing, high-contrast themes, Android-sized touch targets, and keyboard navigation where applicable.
 
 ---
 
 # Design Philosophy
 
-The interface emphasizes:
-
-- Low visual clutter
-- Fast task capture
-- Predictable navigation
-- Progressive disclosure
-- Consistent interaction patterns
-
-Content takes precedence over decoration.
-
----
-
-# Specification Roadmap
-
-Subsequent documents describe the application in detail:
-
-- 01-navigation.md
-- 02-authentication.md
-- 03-home-screen.md
-- 04-inbox.md
-- 05-tasks.md
-- 06-projects.md
-- 07-upcoming.md
-- 08-search.md
-- 09-notifications.md
-- 10-settings.md
-- 11-data-model.md
-- 12-design-system.md
-- 13-user-flows.md
-- 14-sync.md
-- 15-api-observations.md
+The interface emphasizes low visual clutter, fast task capture, predictable navigation, progressive disclosure, and consistent interaction patterns. Content takes precedence over decoration.

@@ -21,7 +21,6 @@ The Task Detail screen allows users to:
 - Mark tasks complete
 - Organize tasks
 - Create subtasks
-- Collaborate through comments
 - Attach files
 - Configure reminders
 - Review task activity
@@ -43,7 +42,6 @@ Task Detail
 ├── Labels
 ├── Priority
 ├── Reminder
-├── Comments
 ├── Activity
 └── Subtasks
 ```
@@ -70,9 +68,6 @@ Task Detail
 │ □ Verify numbers                    │
 │ □ Export PDF                        │
 ├─────────────────────────────────────┤
-│ Comments                            │
-│                                     │
-├─────────────────────────────────────┤
 │ Activity                            │
 └─────────────────────────────────────┘
 ```
@@ -88,7 +83,6 @@ Contains:
 
 Optional actions:
 
-- Share
 - Favorite
 - More Actions
 
@@ -300,38 +294,18 @@ Users may:
 
 ---
 
-# Comments
-
-Comments support collaboration.
-
-Each comment contains:
-
-- Author
-- Timestamp
-- Message
-- Attachments (optional)
-
-Users may:
-
-- Add comments
-- Edit their own comments
-- Delete permitted comments
-- Mention collaborators
-
----
-
 # Attachments
 
 Tasks may contain attached files.
 
 Supported actions:
 
-- Upload
-- Download
+- Add local file
+- Open local file
 - Preview
 - Remove
 
-Attachment availability depends on storage providers and permissions.
+Attachments remain local to the device or reference a user-selected local file. MyDo never uploads them to a service.
 
 ---
 
@@ -369,11 +343,9 @@ Typical actions include:
 - Move
 - Archive
 - Delete
-- Share
-- Copy Link
 - Print (where supported)
 
-Available options depend on task state and permissions.
+Available options depend on task state and platform support.
 
 ---
 
@@ -398,7 +370,7 @@ Save
 
 ↓
 
-Synchronize
+Save Locally
 ```
 
 Updates should appear immediately in the UI.
@@ -426,7 +398,7 @@ Task Removed
 
 ↓
 
-Sync
+Persist Locally
 ```
 
 Recurring tasks instead schedule the next occurrence.
@@ -457,9 +429,7 @@ Users may:
 - Change due date
 - Complete task
 - Create subtasks
-- Add comments (queued where supported)
-
-Changes synchronize automatically when connectivity returns.
+Changes are saved to the local database immediately and require no connectivity.
 
 ---
 
@@ -467,14 +437,12 @@ Changes synchronize automatically when connectivity returns.
 
 Possible causes:
 
-- Synchronization failure
-- Permission denied
-- Network unavailable
+- Local database error
 
 Recovery options:
 
 - Retry
-- Continue editing offline
+- Continue editing locally
 - Cancel
 
 ---
@@ -491,7 +459,6 @@ Recovery options:
 | Tap reminder | Configure reminder |
 | Tap checkbox | Complete task |
 | Tap subtask | Open or edit subtask |
-| Add comment | Append comment |
 | Back | Return to previous screen |
 
 ---
@@ -502,7 +469,7 @@ Task Detail should:
 
 - Announce completion status
 - Expose editable fields with clear labels
-- Support screen readers for comments and activity
+- Support screen readers for activity
 - Maintain logical focus after edits
 - Provide accessible controls for all metadata editors
 - Respect system font scaling and contrast settings
@@ -514,20 +481,20 @@ Task Detail should:
 The screen should:
 
 - Open instantly from cached task data
-- Save edits optimistically with background synchronization
+- Save edits locally as soon as they are confirmed
 - Update dependent task lists immediately after changes
-- Lazily load comments, attachments, and activity history when appropriate
+- Lazily load attachments and activity history when appropriate
 
 ---
 
 # Business Rules
 
-- Every task has a single parent project.
+- A task may be in the Inbox or in a single project.
 - Tasks may contain zero or more subtasks.
 - Tasks may have zero or more labels.
 - A task can have at most one active due date.
 - Completing a recurring task creates the next scheduled occurrence.
-- Users may only modify fields permitted by their access level in shared projects.
+- All local task fields are editable on this installation.
 
 ---
 
@@ -544,7 +511,6 @@ Task Detail
 ├── Label Picker
 ├── Reminder Editor
 ├── Subtask
-├── Comments
 ├── Activity
 └── Overflow Menu
 ```
@@ -557,6 +523,5 @@ The Task Detail screen succeeds when users can:
 
 - Understand all information associated with a task at a glance
 - Modify any task attribute without unnecessary navigation
-- Collaborate effectively through comments and attachments
 - Organize work using projects, labels, priorities, and schedules
-- Complete tasks with immediate visual feedback and reliable synchronization
+- Complete tasks with immediate visual feedback and local persistence

@@ -4,467 +4,64 @@
 
 ## Purpose
 
-The Notifications module keeps users informed about important events that require attention.
-
-Notifications should surface actionable information without interrupting the user's workflow and should always provide direct navigation to the relevant content.
-
-The system includes both in-app notifications and operating system notifications.
+MyDo uses local device notifications to remind the user about their tasks and to report important local-database events. It has no push service, activity feed, assignment, invitation, comment, project-sharing, or account notifications.
 
 ---
 
 # Goals
 
-The Notifications module allows users to:
-
-- View reminders
-- Respond to task assignments
-- Monitor project activity
-- Read collaboration updates
-- Open related tasks directly
-- Manage notification preferences
+- Deliver task reminders at their scheduled local time.
+- Open the related local task when a reminder is selected.
+- Let the user control local reminder and summary preferences.
+- Keep notification history and read state in the local database when supported.
 
 ---
 
 # Notification Types
 
-Notifications are grouped into several categories.
-
-| Type | Description |
-|--------|-------------|
-| Reminder | Task due or reminder triggered |
-| Assignment | Task assigned to user |
-| Mention | User mentioned in a comment |
-| Comment | New comment on watched task |
-| Due Date | Upcoming or overdue task |
-| Project | Project activity |
-| Invitation | Shared project invitation |
-| System | Product announcements and account events |
+| Type | Trigger |
+|---|---|
+| Reminder | A task's time-, date-, or location-based reminder becomes due. |
+| System | A local event needs attention, such as an import failure or database recovery warning. |
 
 ---
 
-# Navigation
+# Navigation and Layout
 
-```
-Application
-
-↓
-
-Notifications
-
-├── Notification List
-├── Notification Detail
-└── Related Task
-```
-
-Notifications are accessible globally from the application.
-
----
-
-# Screen Layout
-
-```
-┌────────────────────────────────────┐
-│ Notifications                 ✓    │
-├────────────────────────────────────┤
-│ Today                             │
-│                                    │
-│ 🔔 Task due in 30 minutes          │
-│                                    │
-│ 💬 Sarah commented                │
-│                                    │
-│ 👤 Assigned: Design homepage       │
-│                                    │
-├────────────────────────────────────┤
-│ Yesterday                         │
-│                                    │
-│ 📅 Sprint planning tomorrow        │
-│                                    │
-└────────────────────────────────────┘
-```
-
----
-
-# Notification List
-
-Notifications are displayed in reverse chronological order.
-
-Typical grouping:
-
-```
-Today
-
-Yesterday
-
-Earlier This Week
-
-Earlier
-```
-
-Unread notifications appear visually distinct.
-
----
-
-# Notification Item
-
-Each notification displays:
-
-- Icon
-- Title
-- Summary
-- Timestamp
-- Read state
-
-Optional metadata:
-
-- Project
-- Task
-- User avatar
-- Priority
-
----
-
-# Read State
-
-Notifications may exist in two states.
-
-## Unread
-
-Characteristics:
-
-- Highlighted
-- Bold title
-- Badge count included
-
----
-
-## Read
-
-Characteristics:
-
-- Standard appearance
-- Badge removed
-- Retained in history
-
----
-
-# Opening a Notification
-
-Selecting a notification navigates directly to its related content.
-
-Examples:
-
-```
-Reminder
-
-↓
-
-Task Detail
-```
-
-```
-Comment
-
-↓
-
-Task Detail
-
-↓
-
-Comments
-```
-
-```
-Invitation
-
-↓
-
-Project
-```
-
-Navigation should preserve the ability to return to the notification list.
+The Notifications screen displays locally stored notices, newest first. Each item shows title, related task or local event, timestamp, and read state. Selecting a reminder opens its Task Detail; selecting a system notice opens the relevant local recovery or data screen.
 
 ---
 
 # Reminder Notifications
 
-Reminder notifications are generated from task reminder settings.
-
-Example:
-
-```
-Task
-
-↓
-
-Reminder
-
-↓
-
-Notification
-
-↓
-
-Open Task
-```
-
-Possible reminder times include:
-
-- At due time
-- Minutes before
-- Hours before
-- Days before
+When a reminder is due, MyDo asks the operating system to display a local notification. The notification includes task title, relevant due information, and actions such as complete, snooze, or open. Availability depends on the user's device-level notification permission.
 
 ---
 
-# Assignment Notifications
+# Preferences
 
-Generated when a user is assigned a task.
-
-Displayed information:
-
-- Task title
-- Assigning user
-- Project
-- Timestamp
-
-Primary action:
-
-```
-Open Task
-```
+Settings can enable or disable task reminders and daily summaries. There are no email, push, assignment, comment, mention, invitation, or shared-project preferences.
 
 ---
 
-# Comment Notifications
+# Read State, Deletion, and Badge
 
-Generated when:
-
-- A new comment is added
-- The user is mentioned
-- Activity occurs on followed tasks
-
-Opening the notification scrolls directly to the relevant comment.
+Opening a notice marks it read unless settings say otherwise. Users may mark all read or remove a local notice; doing so does not change the related task. Badge count reflects unread local notices where supported.
 
 ---
 
-# Project Notifications
+# States and Errors
 
-Examples include:
-
-- Project shared
-- Member joined
-- Member removed
-- Project archived
-
-Selecting the notification opens the project.
+An empty state says there are no local notifications. Loading reads from the local database. If local notifications cannot be scheduled because device permission is denied, explain how to enable permission in system settings. Pull-to-refresh reloads the local list and does not contact a remote service.
 
 ---
 
-# Push Notifications
+# Accessibility and Rules
 
-Operating system notifications may appear when the application is backgrounded.
-
-Supported events:
-
-- Due reminders
-- Assignments
-- Mentions
-- Invitations
-
-Selecting a push notification launches the application and navigates to the related content.
-
----
-
-# Badge Count
-
-Application icon badges indicate the number of unread notifications.
-
-The badge updates when:
-
-- New notifications arrive
-- Notifications are read
-- Notifications are dismissed
-
----
-
-# Mark as Read
-
-Users may:
-
-- Mark individual notifications as read
-- Mark all notifications as read
-
-Flow:
-
-```
-Notifications
-
-↓
-
-Mark All Read
-
-↓
-
-Unread Count = 0
-```
-
----
-
-# Delete Notification
-
-Where supported:
-
-Users may dismiss individual notifications.
-
-Deleting a notification removes it from the visible list but does not affect the underlying task or project.
-
----
-
-# Notification Preferences
-
-Users may configure notifications for:
-
-- Task reminders
-- Assignments
-- Comments
-- Mentions
-- Shared projects
-- Email notifications
-- Push notifications
-
-Preferences are managed from Settings.
-
----
-
-# Empty State
-
-If no notifications exist:
-
-```
-You're all caught up.
-
-New activity will appear here.
-```
-
-No additional actions are required.
-
----
-
-# Loading State
-
-Characteristics:
-
-- Skeleton notification rows
-- Placeholder timestamps
-- Loading indicator
-
-Cached notifications should remain visible whenever possible.
-
----
-
-# Offline State
-
-Users may:
-
-- View cached notifications
-- Open cached tasks
-
-Receiving new notifications requires synchronization.
-
----
-
-# Error State
-
-Possible causes:
-
-- Synchronization failure
-- Notification service unavailable
-- Authentication expired
-
-Recovery actions:
-
-- Retry
-- Refresh
-- Continue using cached notifications
-
----
-
-# User Interactions
-
-| Action | Result |
-|----------|--------|
-| Tap notification | Open related content |
-| Swipe | Mark as read or dismiss (where supported) |
-| Mark all read | Clear unread state |
-| Pull to refresh | Synchronize notifications |
-| Tap settings | Open notification preferences |
-
----
-
-# Accessibility
-
-Notifications should:
-
-- Announce unread status
-- Expose timestamps programmatically
-- Identify notification type through semantic labels
-- Maintain logical focus after returning from linked content
-- Support keyboard navigation
-- Respect system accessibility settings
-
----
-
-# Performance Requirements
-
-The Notifications module should:
-
-- Display cached notifications immediately
-- Update incrementally as new events arrive
-- Preserve scroll position
-- Synchronize unread counts in real time
-- Efficiently handle large notification histories
-
----
-
-# Business Rules
-
-- Every notification references a single primary object (task, project, comment, or account event).
-- Opening a notification marks it as read unless user settings specify otherwise.
-- Deleting a notification does not delete the associated task or project.
-- Badge counts reflect unread notifications only.
-- Notification delivery respects user-configured preferences and platform permissions.
-
----
-
-# Navigation Summary
-
-```
-Notifications
-
-├── Reminder
-│     └── Task Detail
-│
-├── Comment
-│     └── Task Detail
-│
-├── Assignment
-│     └── Task Detail
-│
-├── Project Activity
-│     └── Project
-│
-└── Notification Settings
-```
+Notifications expose task title, state, and actions to assistive technology. Every notification references a task or local system event. Delivery respects local preferences and device permissions. Notification data is included in manual database exports when stored by the app.
 
 ---
 
 # Success Criteria
 
-The Notifications feature succeeds when users can:
-
-- Quickly understand new activity
-- Navigate directly to the relevant work
-- Distinguish unread from previously viewed notifications
-- Configure notification behavior to match personal preferences
-- Reliably receive and review important updates across devices
-```
+Users reliably receive and act on task reminders without an account, connection, synchronization service, or data sent to MyDo.

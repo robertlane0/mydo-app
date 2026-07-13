@@ -4,105 +4,44 @@
 
 ## Purpose
 
-This document defines the logical data model used throughout the application.
-
-The model describes the primary entities, their relationships, lifecycle, ownership, and synchronization behavior. It intentionally avoids implementation details such as database schema or API serialization.
+This document defines MyDo's local-only logical data model. All entities are stored in one local database; there are no users, accounts, workspaces, memberships, servers, synchronization records, or remote API representations.
 
 ---
 
 # Design Principles
 
-The data model follows several principles:
-
-- Every entity has a unique identifier.
-- Relationships are explicit.
-- Objects synchronize independently.
-- Most entities support offline modification.
-- Changes are eventually consistent across devices.
+- Every persisted entity has a stable unique identifier.
+- Relationships are explicit and protected by local referential-integrity rules.
+- The local database is the source of truth.
+- Changes commit locally and are immediately available to local views.
+- Complete data can be manually exported and imported in a versioned backup format.
 
 ---
 
 # Entity Relationship Diagram
 
 ```text
-Workspace
-│
+Local Database
 ├── Projects
-│     │
-│     ├── Sections
-│     │      │
-│     │      └── Tasks
-│     │              │
-│     │              ├── Subtasks
-│     │              ├── Comments
-│     │              ├── Attachments
-│     │              ├── Reminders
-│     │              └── Activity
-│     │
-│     └── Members
-│
+│   ├── Sections
+│   │   └── Tasks
+│   │       ├── Subtasks
+│   │       ├── Attachments
+│   │       ├── Reminders
+│   │       └── Activity Events
 ├── Labels
-│
 ├── Filters
-│
 ├── Notifications
-│
-└── User
+└── Preferences
 ```
-
----
-
-# User
-
-Represents an authenticated account.
-
-## Properties
-
-| Property | Type |
-|-----------|------|
-| id | UUID |
-| name | String |
-| email | String |
-| avatar | URL |
-| timezone | String |
-| locale | String |
-| subscription | Enum |
-| createdAt | DateTime |
-| updatedAt | DateTime |
-
----
-
-# Workspace
-
-Represents the highest organizational boundary.
-
-A workspace contains:
-
-- Projects
-- Members
-- Shared configuration
-
-## Properties
-
-| Property | Type |
-|-----------|------|
-| id | UUID |
-| name | String |
-| ownerId | UUID |
-| createdAt | DateTime |
 
 ---
 
 # Project
 
-Primary organizational container.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
-| workspaceId | UUID |
 | name | String |
 | description | String |
 | color | String |
@@ -112,492 +51,131 @@ Primary organizational container.
 | createdAt | DateTime |
 | updatedAt | DateTime |
 
-## Relationships
-
-```
-Project
-
-↓
-
-Sections
-
-↓
-
-Tasks
-```
-
----
+Each project is local to the database and contains sections and tasks.
 
 # Section
 
-Logical subdivision within a project.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
 | projectId | UUID |
 | name | String |
 | order | Integer |
 
----
-
 # Task
 
-The central entity in the application.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
-| projectId | UUID |
+| projectId | UUID? |
 | sectionId | UUID? |
 | parentTaskId | UUID? |
 | title | String |
 | description | Text |
 | completed | Boolean |
 | priority | Enum |
-| dueDate | Date |
-| dueTime | Time |
-| recurringRule | String |
-| createdBy | UUID |
-| assignedTo | UUID? |
+| dueDate | Date? |
+| dueTime | Time? |
+| recurringRule | String? |
 | createdAt | DateTime |
 | updatedAt | DateTime |
 | completedAt | DateTime? |
 
----
-
-# Task Relationships
-
-```
-Task
-
-├── Labels
-├── Comments
-├── Attachments
-├── Reminders
-├── Activity
-└── Subtasks
-```
-
----
-
-# Subtask
-
-A task may contain child tasks.
-
-Relationship:
-
-```
-Task
-
-↓
-
-Subtask
-
-↓
-
-Subtask
-```
-
-Nested subtasks are supported.
-
----
+A task without a project is in the Inbox. A task may have child tasks, labels, attachments, reminders, and local activity history.
 
 # Label
 
-Reusable categorization.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
 | name | String |
 | color | String |
 | createdAt | DateTime |
 
-Many-to-many relationship with Tasks.
-
----
+Tasks and labels have a many-to-many relationship.
 
 # Filter
 
-Saved search expression.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
 | name | String |
 | query | String |
 | favorite | Boolean |
 
----
-
 # Reminder
 
-Represents a scheduled notification.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
 | taskId | UUID |
 | triggerTime | DateTime |
 | type | Enum |
 | enabled | Boolean |
 
-One task may have multiple reminders.
-
----
-
-# Comment
-
-Discussion attached to a task.
-
-## Properties
-
-| Property | Type |
-|-----------|------|
-| id | UUID |
-| taskId | UUID |
-| authorId | UUID |
-| body | Text |
-| createdAt | DateTime |
-| updatedAt | DateTime |
-
----
+Reminders schedule local device notifications.
 
 # Attachment
 
-Represents uploaded files.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
 | taskId | UUID |
 | filename | String |
 | mimeType | String |
 | size | Integer |
-| url | URL |
-| uploadedBy | UUID |
+| localUri | URI |
 
----
+Attachments refer to locally accessible files; they are never uploaded by MyDo.
 
 # Activity Event
 
-Immutable history record.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
 | objectId | UUID |
 | objectType | Enum |
-| actorId | UUID |
 | eventType | Enum |
 | timestamp | DateTime |
 
-Example events:
-
-- Created
-- Updated
-- Completed
-- Deleted
-- Assigned
-
----
+Activity records local actions such as created, updated, completed, and deleted.
 
 # Notification
 
-Represents user-visible activity.
-
-## Properties
-
 | Property | Type |
-|-----------|------|
+|---|---|
 | id | UUID |
-| userId | UUID |
 | type | Enum |
-| objectId | UUID |
+| taskId | UUID? |
 | read | Boolean |
 | createdAt | DateTime |
 
----
-
-# Membership
-
-Defines project permissions.
-
-## Properties
-
-| Property | Type |
-|-----------|------|
-| id | UUID |
-| projectId | UUID |
-| userId | UUID |
-| role | Enum |
-
-Example roles:
-
-- Owner
-- Admin
-- Editor
-- Viewer
+Notification types are **Reminder** and **System** (for example, local database or import errors).
 
 ---
 
-# Enumerations
+# Local Database and Backup Format
 
-## Priority
-
-```
-P1
-
-P2
-
-P3
-
-P4
-```
-
----
-
-## Notification Type
-
-```
-Reminder
-
-Comment
-
-Mention
-
-Assignment
-
-Invitation
-
-Project
-
-System
-```
-
----
-
-## Sync Status
-
-```
-Local
-
-Pending
-
-Uploading
-
-Synced
-
-Conflict
-
-Deleted
-```
-
----
-
-## Project State
-
-```
-Active
-
-Archived
-
-Deleted
-```
-
----
-
-# Relationships
-
-## One-to-Many
-
-```
-Workspace → Projects
-
-Project → Sections
-
-Section → Tasks
-
-Task → Comments
-
-Task → Attachments
-
-Task → Reminders
-
-Task → Activity
-```
-
----
-
-## Many-to-Many
-
-```
-Tasks ↔ Labels
-
-Projects ↔ Members
-```
-
----
-
-# Object Lifecycle
-
-## Task
-
-```
-Created
-
-↓
-
-Edited
-
-↓
-
-Scheduled
-
-↓
-
-Completed
-
-↓
-
-Archived
-
-↓
-
-Deleted
-```
-
----
-
-## Project
-
-```
-Created
-
-↓
-
-Updated
-
-↓
-
-Shared
-
-↓
-
-Archived
-
-↓
-
-Deleted
-```
-
----
-
-# Synchronization Model
-
-Every synchronized object maintains:
-
-| Property | Purpose |
-|-----------|----------|
-| id | Stable identity |
-| version | Conflict detection |
-| updatedAt | Last modification |
-| deleted | Soft deletion |
-| syncState | Local synchronization status |
-
----
-
-# Offline Persistence
-
-Entities expected to exist locally include:
-
-- User
-- Projects
-- Sections
-- Tasks
-- Labels
-- Filters
-- Notifications
-- Comments
-- Pending changes
-
-Attachments may use lazy loading.
+The database stores all listed entities plus preferences. A manual export creates a complete, versioned MyDo backup with integrity metadata. Import validates the format before creating, replacing, or merging local records. Imports neither contact a server nor create an account.
 
 ---
 
 # Referential Integrity Rules
 
-- Every Task belongs to exactly one Project.
-- Every Section belongs to exactly one Project.
-- Every Comment belongs to exactly one Task.
-- Every Reminder belongs to exactly one Task.
-- Every Attachment belongs to exactly one Task.
-- Labels may belong to many Tasks.
-- Projects may contain many Members.
-- Deleted parent objects must be handled without creating orphaned records.
+- A section belongs to exactly one project.
+- A task may have zero or one project and section; an assigned section must belong to its project.
+- A reminder and attachment belong to exactly one task.
+- Labels may belong to many tasks.
+- Deleting a parent object must not leave orphaned child records.
 
 ---
 
-# Conflict Resolution
+# Data Validation and Performance
 
-When concurrent edits occur:
-
-1. Detect version mismatch.
-2. Preserve local edits until reconciliation.
-3. Merge non-conflicting fields where possible.
-4. Surface conflicts requiring user intervention.
-5. Update all dependent views after resolution.
-
----
-
-# Data Validation
-
-General validation rules:
-
-- IDs are immutable.
-- Required fields cannot be null.
-- Foreign keys must reference existing objects.
-- Dates use UTC internally.
-- User-facing formatting respects locale and timezone.
-- Soft-deleted objects are excluded from standard queries.
-
----
-
-# Performance Considerations
-
-The data model should support:
-
-- Incremental synchronization
-- Partial object updates
-- Lazy loading of large collections
-- Efficient local indexing
-- Offline-first operation
-- Scalable datasets containing tens of thousands of tasks
+IDs are immutable; required fields cannot be null; foreign keys reference existing records; dates use UTC internally; local presentation respects locale and time zone. The local database supports efficient indexes, partial updates, and datasets containing tens of thousands of tasks.
 
 ---
 
 # Success Criteria
 
-The data model succeeds when it:
-
-- Accurately represents all application entities
-- Maintains referential integrity
-- Supports offline-first synchronization
-- Enables efficient querying and updates
-- Scales to large personal and collaborative workspaces
-- Provides a stable foundation for future application features
+The model represents all local MyDo entities, maintains referential integrity, supports fast local queries and updates, and can be fully backed up and restored through manual export and import.

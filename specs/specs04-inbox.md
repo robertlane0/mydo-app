@@ -82,7 +82,7 @@ Contains:
 Optional indicators:
 
 - Remaining task count
-- Sync status
+- Local database status (only when an error requires attention)
 
 ---
 
@@ -188,7 +188,7 @@ Animated Removal
 
 ↓
 
-Completion Sync
+Save Locally
 ```
 
 Completed tasks are removed from the active Inbox view.
@@ -258,7 +258,7 @@ Users may:
 - Complete tasks
 - Organize tasks
 
-Changes are queued until synchronization resumes.
+Changes are saved to the local database immediately; no connection is required.
 
 ---
 
@@ -266,8 +266,6 @@ Changes are queued until synchronization resumes.
 
 Possible causes:
 
-- Synchronization failure
-- Server unavailable
 - Local database error
 
 The interface should display:
@@ -288,7 +286,7 @@ Typical actions include:
 - Refresh
 - Help
 
-The available actions may vary by platform and user permissions.
+The available actions may vary by platform.
 
 ---
 
@@ -351,7 +349,7 @@ Available gestures should respect user preferences and platform conventions.
 | Tap + | Create task |
 | Long press | Enter multi-select mode |
 | Swipe | Execute configured quick action |
-| Pull to refresh | Synchronize Inbox |
+| Pull to refresh | Reload Inbox from local storage |
 | Search | Filter tasks |
 
 ---
@@ -377,7 +375,7 @@ The Inbox should:
 - Efficiently render large task lists
 - Support smooth scrolling
 - Apply task updates incrementally
-- Synchronize changes in the background without disrupting interaction
+- Save local changes without disrupting interaction
 
 ---
 
@@ -405,7 +403,7 @@ Inbox
 - Assigning a project removes the task from the Inbox.
 - Completing a task removes it from the active Inbox list.
 - Deleted tasks cannot be recovered from the active Inbox.
-- Offline changes are synchronized automatically when connectivity is restored.
+- All Inbox changes persist locally immediately and are included in manual exports.
 
 ---
 

@@ -163,7 +163,6 @@ Each task may display:
 - Project
 - Labels
 - Recurring indicator
-- Assignee
 
 Selecting a task opens Task Detail.
 
@@ -313,7 +312,6 @@ Selecting a result opens Task Detail.
 
 Optional filters include:
 
-- Assigned to Me
 - Priority
 - Project
 - Labels
@@ -326,7 +324,7 @@ Filters affect presentation only.
 
 # Loading State
 
-Displayed while synchronization is occurring.
+Displayed while scheduled tasks are loading from the local database.
 
 Characteristics:
 
@@ -366,7 +364,7 @@ Users may:
 - Complete tasks
 - Move tasks
 
-Changes synchronize automatically when connectivity returns.
+Changes are saved to the local database immediately and require no connectivity.
 
 ---
 
@@ -374,14 +372,13 @@ Changes synchronize automatically when connectivity returns.
 
 Possible causes:
 
-- Synchronization failure
-- Server unavailable
+- Local database error
 - Calendar data unavailable
 
 Recovery actions:
 
 - Retry
-- Continue offline
+- Continue using locally available data
 - Return to previous screen
 
 ---
@@ -394,7 +391,7 @@ Recovery actions:
 | Tap checkbox | Complete task |
 | Tap date | Jump to date |
 | Drag task | Reschedule |
-| Pull to refresh | Synchronize |
+| Pull to refresh | Reload local schedule |
 | Tap + | Create scheduled task |
 | Scroll | Browse timeline |
 
@@ -421,7 +418,7 @@ Upcoming should:
 - Lazily load distant dates
 - Preserve scroll position
 - Apply scheduling changes immediately
-- Synchronize incrementally without interrupting scrolling
+- Update changed local tasks without interrupting scrolling
 
 ---
 
@@ -460,4 +457,4 @@ The Upcoming feature succeeds when users can:
 - Quickly reschedule tasks when priorities change
 - Identify overdue work before it is forgotten
 - Add future tasks with minimal effort
-- Maintain confidence that scheduled work is accurately synchronized across devices
+- Maintain confidence that scheduled work is accurately stored locally

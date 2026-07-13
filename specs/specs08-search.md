@@ -4,7 +4,7 @@
 
 ## Purpose
 
-The Search module provides a unified interface for locating tasks, projects, labels, comments, and other user-created content.
+The Search module provides a unified interface for locating locally stored tasks, projects, labels, notes, and other user-created content.
 
 Search is designed to return relevant results instantly while allowing users to navigate directly to the desired object.
 
@@ -138,8 +138,7 @@ Search may return:
 - Sections
 - Labels
 - Filters
-- Comments
-- Collaborators (where applicable)
+- Task notes
 
 Each result type should have a distinct visual representation.
 
@@ -259,7 +258,6 @@ Optional filters include:
 - Due Date
 - Priority
 - Completed Status
-- Assignee
 
 Filters narrow visible results without changing the search query.
 
@@ -295,15 +293,9 @@ Existing results should remain visible until replacement data is available.
 
 ---
 
-# Offline State
+# Local-Only Behavior
 
-Users may search:
-
-- Cached tasks
-- Cached projects
-- Cached labels
-
-Remote-only content may not appear until synchronization resumes.
+Search queries the local database and returns all locally stored supported content. No remote content or connection is required.
 
 ---
 
@@ -311,14 +303,12 @@ Remote-only content may not appear until synchronization resumes.
 
 Possible causes:
 
-- Search service unavailable
-- Synchronization failure
 - Local database error
 
 Recovery actions:
 
 - Retry
-- Continue searching cached content
+- Continue searching available local content
 
 ---
 
@@ -388,7 +378,7 @@ Search should:
 
 - Search is case-insensitive.
 - Partial word matching is supported.
-- Search results reflect the user's current permissions.
+- Search results reflect all locally stored content.
 - Completed items may be hidden or shown according to active filters.
 - Recent searches are stored locally and may be cleared by the user.
 
@@ -417,5 +407,5 @@ The Search feature succeeds when users can:
 - Navigate directly to relevant content
 - Refine results using filters and suggestions
 - Reuse previous searches efficiently
-- Reliably search cached content while offline
+- Reliably search all local content without a connection
 - Scale to thousands of tasks without noticeable performance degradation

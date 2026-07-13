@@ -4,543 +4,90 @@
 
 ## Purpose
 
-Projects are the primary organizational containers within the application.
-
-A Project groups related tasks into a shared context, enabling users and teams to organize work by initiative, client, area of responsibility, or personal objective.
-
-Projects provide structure while remaining flexible enough to support both simple personal lists and complex collaborative workflows.
+A MyDo project is a local container for related tasks. Projects are personal to the device's local database; MyDo has no project sharing, members, invitations, roles, or access permissions.
 
 ---
 
 # Goals
 
-Projects allow users to:
-
-- Organize related tasks
-- Separate work by context
-- Create sections
-- Collaborate with other users
-- Assign responsibilities
-- Track project progress
-- Archive completed work
+- Organize local tasks by initiative, area, client, or personal objective.
+- Create, edit, archive, and delete projects quickly.
+- Use sections to group tasks within a project.
+- Keep project changes immediately available in the local database.
 
 ---
 
-# Navigation
+# Navigation and Layout
 
 ```
 Projects
-
-↓
-
-Project List
-
-↓
-
-Project
-
-├── Sections
-├── Tasks
-├── Members
-├── Activity
-└── Project Settings
+├── Project List
+│   └── Project
+│       ├── Sections
+│       └── Tasks
+└── Create Project
 ```
 
-Projects are accessible from the application's primary navigation.
-
----
-
-# Screen Layout
-
-```
-┌────────────────────────────────────┐
-│ ← Marketing Website           ⋮    │
-├────────────────────────────────────┤
-│ 18 Tasks                         │
-│ 6 Completed                      │
-│                                  │
-├────────────────────────────────────┤
-│ Planning                         │
-│ □ Define requirements            │
-│ □ Interview stakeholders         │
-│                                  │
-├────────────────────────────────────┤
-│ Development                      │
-│ □ Landing page                   │
-│ □ Contact form                   │
-│                                  │
-├────────────────────────────────────┤
-│ Testing                          │
-│ □ QA review                      │
-│                                  │
-│                 ＋                │
-└────────────────────────────────────┘
-```
+The project list supports favorites, archived projects, search, sorting, and an empty-state action to create a project.
 
 ---
 
 # Project Properties
 
-Every project contains core metadata.
-
 | Property | Description |
-|-----------|-------------|
-| Name | Project title |
+|---|---|
+| Name | Required local project name |
+| Description | Optional context |
 | Color | Visual identifier |
-| Icon | Optional project icon |
-| Description | Optional summary |
-| Sections | Organizational groups |
-| Members | Collaborators |
-| Visibility | Personal or shared |
-| Archived | Active status |
+| Icon | Optional visual identifier |
+| Favorite | Pins the project in navigation |
+| Archived | Hides the project from active navigation |
+
+Projects contain sections and tasks only. They do not have visibility modes, collaborators, or member lists.
 
 ---
 
-# Project List
+# Creating and Editing a Project
 
-Displays all available projects.
-
-Typical ordering:
-
-- Favorites
-- Personal projects
-- Team projects
-- Archived projects (optional)
-
-Projects may be collapsed or expanded.
+Creating requires a name and may include color, icon, and description. Saving writes the project locally and makes it visible immediately. Editing supports the same fields, favorite state, and archive state.
 
 ---
 
-# Creating a Project
+# Sections and Tasks
 
-Flow:
+Sections are local, ordered subdivisions of one project. Users can create, rename, reorder, or delete them. Deleting a section asks whether to move contained tasks to another section or leave them unsectioned in the project.
 
-```
-Projects
-
-↓
-
-New Project
-
-↓
-
-Enter Name
-
-↓
-
-Choose Color
-
-↓
-
-Optional Description
-
-↓
-
-Save
-```
-
-After creation:
-
-- Project appears in the Project List.
-- The project opens automatically.
-- Initial sections may be created immediately.
-
----
-
-# Editing a Project
-
-Editable properties include:
-
-- Name
-- Color
-- Icon
-- Description
-- Default view
-- Favorite status
-
-Changes should synchronize immediately.
-
----
-
-# Sections
-
-Sections divide projects into logical groups.
-
-Example:
-
-```
-Website
-
-├── Planning
-├── Design
-├── Development
-├── QA
-└── Launch
-```
-
-Sections improve readability without affecting task ownership.
-
----
-
-# Section Operations
-
-Users may:
-
-- Create
-- Rename
-- Delete
-- Reorder
-- Collapse
-- Expand
-
-Deleting a section should prompt users to move or reassign contained tasks.
-
----
-
-# Tasks
-
-A Project contains one or more tasks.
-
-Tasks inherit project membership.
-
-Each task may belong to one section.
-
-Example:
-
-```
-Project
-
-↓
-
-Section
-
-↓
-
-Task
-```
-
-Moving a task between sections does not change its project.
-
----
-
-# Project Members
-
-Shared projects include collaborators.
-
-Typical member information:
-
-- Avatar
-- Name
-- Role
-- Online status (optional)
-
-Roles may determine editing permissions.
-
----
-
-# Invitations
-
-Users may invite collaborators.
-
-Flow:
-
-```
-Project
-
-↓
-
-Members
-
-↓
-
-Invite
-
-↓
-
-Email
-
-↓
-
-Send Invitation
-```
-
-Pending invitations remain visible until accepted or revoked.
-
----
-
-# Project Activity
-
-Activity provides a chronological history.
-
-Examples:
-
-```
-Project Created
-
-↓
-
-Task Added
-
-↓
-
-Section Renamed
-
-↓
-
-Member Invited
-
-↓
-
-Task Completed
-```
-
-Activity is read-only.
-
----
-
-# Progress Indicators
-
-Projects may expose completion metrics.
-
-Examples:
-
-```
-24 / 40 Tasks Complete
-
-60%
-```
-
-Progress updates automatically as tasks are completed.
-
----
-
-# Sorting
-
-Projects may support multiple task sort modes.
-
-Examples:
-
-| Sort | Behavior |
-|--------|----------|
-| Manual | User-defined |
-| Due Date | Earliest first |
-| Priority | Highest first |
-| Name | Alphabetical |
-| Date Added | Most recent first |
-
-Changing the sort order affects presentation only.
-
----
-
-# Filtering
-
-Within a project, users may filter tasks by:
-
-- Assignee
-- Label
-- Priority
-- Due Date
-- Completion Status
-
-Filters should not modify underlying project data.
+Tasks can be created, completed, reordered, moved between sections, and moved to another project. A task inherits no people, permissions, or membership data.
 
 ---
 
 # Project Menu
 
-Typical actions include:
-
-- Edit
-- Favorite
-- Duplicate
-- Archive
-- Share
-- Manage Members
-- Sort
-- Delete
-
-Available actions depend on ownership and permissions.
+The menu includes edit, favorite/unfavorite, archive/unarchive, export local database (via Settings), and delete. Deletion requires confirmation and explains what happens to contained tasks; it must not silently discard data.
 
 ---
 
-# Archiving
+# States and Errors
 
-Archiving hides a project from active navigation while preserving all data.
-
-Flow:
-
-```
-Project
-
-↓
-
-Archive
-
-↓
-
-Confirmation
-
-↓
-
-Archive Project
-```
-
-Archived projects can be restored.
+An empty project offers task creation. Loading and pull-to-refresh read the local database. If a local database error prevents loading or saving, show the error and offer retry; project data is never fetched from a server.
 
 ---
 
-# Deleting a Project
+# Interactions, Accessibility, and Performance
 
-Deleting permanently removes the project and its associated organizational structure.
-
-Users should receive a confirmation dialog before deletion.
-
-Deletion behavior for tasks depends on application rules (for example, permanent deletion or migration).
-
----
-
-# Empty State
-
-Displayed when a project contains no tasks.
-
-Example:
-
-```
-This project is empty.
-
-Start by creating your first task.
-```
-
-Primary action:
-
-```
-Add Task
-```
-
-Secondary action:
-
-```
-Create Section
-```
-
----
-
-# Loading State
-
-Characteristics:
-
-- Placeholder section headers
-- Skeleton task rows
-- Disabled interactions where necessary
-
----
-
-# Offline State
-
-Users may:
-
-- Browse cached projects
-- Create tasks
-- Edit project metadata
-- Move tasks
-- Complete tasks
-
-Changes synchronize automatically when connectivity is restored.
-
----
-
-# Error State
-
-Possible causes:
-
-- Synchronization failure
-- Permission change
-- Project unavailable
-- Server error
-
-Recovery options:
-
-- Retry
-- Continue offline
-- Return to Project List
-
----
-
-# User Interactions
-
-| Action | Result |
-|----------|--------|
-| Tap Project | Open project |
-| Tap Task | Open Task Detail |
-| Tap Section | Expand or collapse |
-| Tap + | Create task |
-| Long press task | Multi-select |
-| Drag task | Reorder or move section |
-| Pull to refresh | Synchronize project |
-
----
-
-# Accessibility
-
-Projects should:
-
-- Expose section hierarchy to assistive technologies
-- Announce progress indicators
-- Support keyboard navigation
-- Maintain logical focus after reordering
-- Provide accessible labels for project colors and icons
-- Respect system text scaling
-
----
-
-# Performance Requirements
-
-Projects should:
-
-- Open immediately from cached data
-- Support projects containing thousands of tasks
-- Virtualize long task lists
-- Synchronize changes incrementally
-- Preserve scroll position when returning from Task Detail
+Support tapping to open, long-pressing to multi-select, and dragging to reorder tasks or sections. Controls expose descriptive accessibility labels and remain usable with screen readers, keyboard navigation, and scaled text. Virtualize large task lists and update changed local rows incrementally.
 
 ---
 
 # Business Rules
 
-- Every task belongs to exactly one project.
-- A project may contain zero or more sections.
 - Sections belong to exactly one project.
-- Projects may be personal or shared.
-- Archived projects remain synchronized but are hidden from active navigation.
-- Users may only modify projects for which they have sufficient permissions.
-
----
-
-# Navigation Summary
-
-```
-Projects
-
-├── Project
-│     ├── Task Detail
-│     ├── Section
-│     ├── Members
-│     ├── Activity
-│     └── Project Settings
-│
-├── Create Project
-└── Archived Projects
-```
+- A project may be archived but remains in the local database and in manual backups.
+- Every project is personal and editable on this installation.
+- Project changes persist locally immediately and are included in the next manual export.
 
 ---
 
 # Success Criteria
 
-The Projects feature succeeds when users can:
-
-- Organize related work into meaningful containers
-- Navigate large collections of tasks efficiently
-- Collaborate with teammates in shared projects
-- Track project progress at a glance
-- Manage project structure without disrupting individual task workflows
-- Scale from simple personal lists to complex multi-user initiatives
+Users can organize thousands of local tasks into projects and sections, retrieve them quickly, and preserve them through manual export and import.

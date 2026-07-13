@@ -60,7 +60,7 @@ Design System
 
 ### Brand Colors
 
-* **Primary Brand (Todoist Red):** Used for main Floating Action Button (FAB), active tab indicators, and primary marketing touchpoints.
+* **Primary Brand (MyDo Red):** Used for the main Floating Action Button (FAB), active tab indicators, and primary product touchpoints.
 * **Accent Theme Colors:** Dynamic based on user settings (e.g., Tangerine, Sunflower, Clover, Amethyst). Alters secondary interactive elements.
 
 ### Semantic Priority Colors
@@ -124,10 +124,10 @@ Used heavily for context-preserving data entry (Quick Add).
 * **Behavior:** Slides up over the current view. Dims the background (scrim at 32% opacity black).
 * **Corner Radius:** 16dp top-left and top-right.
 
-### Chips (Collaborators & Labels)
+### Chips (Labels)
 
 * **Visuals:** Highly rounded rectangles.
-* **Content:** May contain an avatar (collaborators), an icon (labels), and a text string.
+* **Content:** May contain an icon and a text string.
 * **State:** Outlined by default; filled with a tonal background when selected.
 
 ---
