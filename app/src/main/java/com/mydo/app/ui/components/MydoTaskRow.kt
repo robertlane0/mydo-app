@@ -13,9 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import com.mydo.app.domain.model.Priority
+import com.mydo.app.ui.theme.MydoIcons
 import com.mydo.app.ui.theme.MydoSpacing
+import java.util.UUID
 
 @Composable
 fun MydoTaskRow(
@@ -26,12 +29,19 @@ fun MydoTaskRow(
     onCompletionToggle: () -> Unit,
     modifier: Modifier = Modifier,
     metadata: String? = null,
+    isSelected: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
+    onSelectionToggle: (() -> Unit)? = null,
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = MydoSpacing.minimumTouchTarget),
-        color = MaterialTheme.colorScheme.surface,
+        color = if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
     ) {
         Row(
             modifier = Modifier
@@ -39,11 +49,20 @@ fun MydoTaskRow(
                 .padding(vertical = MydoSpacing.extraSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CircularCompletionControl(
-                completed = completed,
-                priority = priority,
-                onToggle = onCompletionToggle,
-            )
+            // Selection checkbox in selection mode
+            if (onSelectionToggle != null) {
+                androidx.compose.material3.Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onSelectionToggle() },
+                    modifier = Modifier.padding(end = MydoSpacing.small),
+                )
+            } else {
+                CircularCompletionControl(
+                    completed = completed,
+                    priority = priority,
+                    onToggle = onCompletionToggle,
+                )
+            }
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -53,6 +72,7 @@ fun MydoTaskRow(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
                     textDecoration = if (completed) TextDecoration.LineThrough else null,
+                    color = if (completed) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
                 )
                 if (metadata != null) {
                     Spacer(modifier = Modifier.padding(top = MydoSpacing.extraSmall))
