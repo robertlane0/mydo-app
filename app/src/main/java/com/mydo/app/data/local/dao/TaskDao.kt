@@ -35,6 +35,17 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :id")
     fun observeById(id: String): Flow<TaskEntity?>
 
+    // -- Upcoming / Date Grouped --
+
+    @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC")
+    fun observeAllScheduled(): Flow<List<TaskEntity>>
+
+    @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis >= :startUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC")
+    fun observeScheduledFrom(startUtcMillis: Long): Flow<List<TaskEntity>>
+
+    @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis < :nowUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC")
+    fun observeOverdueTasks(nowUtcMillis: Long): Flow<List<TaskEntity>>
+
     // -- Get queries (suspend) --
 
     @Query("SELECT * FROM tasks WHERE id = :id")
@@ -50,6 +61,9 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE (title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%') AND parentTaskId IS NULL ORDER BY updatedAtUtcMillis DESC LIMIT :limit")
     suspend fun search(query: String, limit: Int = 50): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE (title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%') AND parentTaskId IS NULL AND completed = :completed ORDER BY updatedAtUtcMillis DESC LIMIT :limit")
+    suspend fun searchWithCompletion(query: String, completed: Boolean, limit: Int = 50): List<TaskEntity>
 
     // -- Mutations --
 
@@ -85,4 +99,29 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET sectionId = NULL, updatedAtUtcMillis = :updatedAtUtcMillis WHERE sectionId = :sectionId")
     suspend fun clearSection(sectionId: String, updatedAtUtcMillis: Long)
+
+    // -- Bulk operations --
+
+    @Query("UPDATE tasks SET projectId = :projectId, sectionId = :sectionId, updatedAtUtcMillis = :updatedAtUtcMillis WHERE id IN (:ids)")
+    suspend fun bulkMoveToProject(ids: List<String>, projectId: String?, sectionId: String?, updatedAtUtcMillis: Long)
+
+    @Query("UPDATE tasks SET priority = :priority, updatedAtUtcMillis = :updatedAtUtcMillis WHERE id IN (:ids)")
+    suspend fun bulkSetPriority(ids: List<String>, priority: String, updatedAtUtcMillis: Long)
+
+    @Query("UPDATE tasks SET dueAtUtcMillis = :dueAtUtcMillis, updatedAtUtcMillis = :updatedAtUtcMillis WHERE id IN (:ids)")
+    suspend fun bulkSetDueDate(ids: List<String>, dueAtUtcMillis: Long?, updatedAtUtcMillis: Long)
+
+    @Query("UPDATE tasks SET completed = :completed, completedAtUtcMillis = :completedAtUtcMillis, updatedAtUtcMillis = :updatedAtUtcMillis WHERE id IN (:ids)")
+    suspend fun bulkComplete(ids: List<String>, completed: Boolean, completedAtUtcMillis: Long?, updatedAtUtcMillis: Long)
+
+    @Query("DELETE FROM tasks WHERE id IN (:ids)")
+    suspend fun bulkDelete(ids: List<String>)
+
+    // -- Recurring tasks --
+
+    @Query("SELECT * FROM tasks WHERE recurringRule IS NOT NULL AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC")
+    fun observeRecurringTasks(): Flow<List<TaskEntity>>
+
+    @Query("SELECT * FROM tasks WHERE recurringRule IS NOT NULL AND parentTaskId = :parentTaskId ORDER BY dueAtUtcMillis ASC")
+    suspend fun getRecurringSeries(parentTaskId: String): List<TaskEntity>
 }

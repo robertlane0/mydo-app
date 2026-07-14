@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -23,20 +25,30 @@ import androidx.navigation.compose.rememberNavController
 import com.mydo.app.ui.components.MydoSnackbarHost
 import com.mydo.app.ui.components.TaskComposerSheet
 import com.mydo.app.ui.components.TaskComposerViewModel
+import com.mydo.app.ui.filters.FiltersScreen
+import com.mydo.app.ui.filters.FiltersViewModel
 import com.mydo.app.ui.home.HomeViewModel
 import com.mydo.app.ui.inbox.InboxScreen
+import com.mydo.app.ui.labels.LabelsScreen
+import com.mydo.app.ui.labels.LabelsViewModel
 import com.mydo.app.ui.navigation.Screen
 import com.mydo.app.ui.projects.ProjectsScreen
 import com.mydo.app.ui.search.SearchScreen
+import com.mydo.app.ui.search.SearchViewModel
 import com.mydo.app.ui.taskdetail.TaskDetailScreen
 import com.mydo.app.ui.today.TodayScreen
 import com.mydo.app.ui.upcoming.UpcomingScreen
+import com.mydo.app.ui.upcoming.UpcomingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MydoApp(
     homeViewModel: HomeViewModel,
     taskComposerViewModel: TaskComposerViewModel,
+    upcomingViewModel: UpcomingViewModel,
+    searchViewModel: SearchViewModel,
+    labelsViewModel: LabelsViewModel,
+    filtersViewModel: FiltersViewModel,
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -55,7 +67,9 @@ fun MydoApp(
                 Screen.Today,
                 Screen.Upcoming,
                 Screen.Projects,
-                Screen.Search
+                Screen.Search,
+                Screen.Labels,
+                Screen.Filters,
             )
             
             NavigationBar {
@@ -92,9 +106,11 @@ fun MydoApp(
         ) {
             composable(Screen.Inbox.route) { InboxScreen(homeViewModel, navController) }
             composable(Screen.Today.route) { TodayScreen(navController) }
-            composable(Screen.Upcoming.route) { UpcomingScreen(navController) }
+            composable(Screen.Upcoming.route) { UpcomingScreen(upcomingViewModel, navController) }
             composable(Screen.Projects.route) { ProjectsScreen(navController) }
-            composable(Screen.Search.route) { SearchScreen(navController) }
+            composable(Screen.Search.route) { SearchScreen(searchViewModel, navController) }
+            composable(Screen.Labels.route) { LabelsScreen(labelsViewModel, navController) }
+            composable(Screen.Filters.route) { FiltersScreen(filtersViewModel, navController) }
             composable(Screen.TaskDetail.route) { backStackEntry ->
                 val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
                 TaskDetailScreen(taskId = taskId, onBack = { navController.popBackStack() })

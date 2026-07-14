@@ -7,10 +7,9 @@ import java.util.UUID
 
 interface LabelRepository {
     fun observeAll(): Flow<AppResult<List<Label>>>
-    fun observeByTask(taskId: UUID): Flow<AppResult<List<Label>>>
+    suspend fun getById(id: UUID): AppResult<Label?>
     suspend fun create(label: Label): AppResult<Unit>
     suspend fun update(label: Label): AppResult<Unit>
     suspend fun delete(id: UUID): AppResult<Unit>
-    suspend fun assignToTask(taskId: UUID, labelId: UUID): AppResult<Unit>
-    suspend fun unassignFromTask(taskId: UUID, labelId: UUID): AppResult<Unit>
+    suspend fun search(query: String): AppResult<List<Label>>
 }
