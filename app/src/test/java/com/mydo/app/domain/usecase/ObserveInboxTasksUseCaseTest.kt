@@ -1,6 +1,7 @@
 package com.mydo.app.domain.usecase
 
 import com.mydo.app.core.errors.AppResult
+import com.mydo.app.domain.model.Task
 import com.mydo.app.domain.model.TaskSummary
 import com.mydo.app.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
@@ -8,17 +9,28 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.util.UUID
 
 class ObserveInboxTasksUseCaseTest {
+    private val fakeRepository = object : TaskRepository {
+        override fun observeInboxTasks(): Flow<AppResult<List<TaskSummary>>> = flowOf(AppResult.Success(emptyList()))
+        override fun observeTodayTasks(endOfDayUtcMillis: Long): Flow<AppResult<List<TaskSummary>>> = flowOf(AppResult.Success(emptyList()))
+        override fun observeProjectTasks(projectId: UUID): Flow<AppResult<List<TaskSummary>>> = flowOf(AppResult.Success(emptyList()))
+        override fun observeSectionTasks(sectionId: UUID): Flow<AppResult<List<TaskSummary>>> = flowOf(AppResult.Success(emptyList()))
+        override fun observeById(id: UUID): Flow<AppResult<Task?>> = flowOf(AppResult.Success(null))
+        override suspend fun getById(id: UUID): AppResult<Task?> = AppResult.Success(null)
+        override suspend fun create(task: Task): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun update(task: Task): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun delete(id: UUID): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun updateCompletion(id: UUID, completed: Boolean, completedAtUtcMillis: Long?, updatedAtUtcMillis: Long): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun moveToProject(id: UUID, projectId: UUID?, sectionId: UUID?, updatedAtUtcMillis: Long): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun clearSection(sectionId: UUID, updatedAtUtcMillis: Long): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun search(query: String): AppResult<List<TaskSummary>> = AppResult.Success(emptyList())
+    }
+
     @Test
     fun delegatesToRepository() = runTest {
-        val useCase = ObserveInboxTasksUseCase(
-            taskRepository = object : TaskRepository {
-                override fun observeInboxTasks(): Flow<AppResult<List<TaskSummary>>> {
-                    return flowOf(AppResult.Success(emptyList()))
-                }
-            },
-        )
+        val useCase = ObserveInboxTasksUseCase(taskRepository = fakeRepository)
 
         useCase().collect { result ->
             assertEquals(AppResult.Success(emptyList<TaskSummary>()), result)
