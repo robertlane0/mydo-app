@@ -7,9 +7,12 @@ import com.mydo.app.core.errors.LogcatErrorReporter
 import com.mydo.app.core.time.SystemTimeProvider
 import com.mydo.app.core.time.TimeProvider
 import com.mydo.app.data.local.MydoDatabase
+import com.mydo.app.data.local.MIGRATION_1_2
 import com.mydo.app.data.repository.RoomPreferenceRepository
+import com.mydo.app.data.repository.RoomProjectRepository
 import com.mydo.app.data.repository.RoomTaskRepository
 import com.mydo.app.domain.repository.PreferenceRepository
+import com.mydo.app.domain.repository.ProjectRepository
 import com.mydo.app.domain.repository.TaskRepository
 import com.mydo.app.domain.usecase.ObserveInboxTasksUseCase
 import com.mydo.app.platform.AndroidAttachmentGateway
@@ -28,13 +31,16 @@ class AppContainer(context: Context) {
         applicationContext,
         MydoDatabase::class.java,
         "mydo.db",
-    ).build()
+    )
+    .addMigrations(MIGRATION_1_2)
+    .build()
 
     val errorReporter: ErrorReporter = LogcatErrorReporter()
     val timeProvider: TimeProvider = SystemTimeProvider()
 
     val taskRepository: TaskRepository = RoomTaskRepository(database)
     val preferenceRepository: PreferenceRepository = RoomPreferenceRepository(database, timeProvider)
+    val projectRepository: ProjectRepository = RoomProjectRepository(database)
 
     val notificationScheduler: NotificationScheduler = AndroidNotificationScheduler()
     val documentPicker: DocumentPicker = AndroidDocumentPicker()
