@@ -11,7 +11,7 @@ Settings manages local MyDo preferences, reminder behavior, appearance, privacy,
 # Goals
 
 - Configure local application preferences.
-- Control locally scheduled notifications.
+- Control locally scheduled notifications and reminders.
 - Customize appearance and productivity features.
 - Import and export the local database manually.
 - Make destructive local-data actions clear and confirmable.
@@ -46,6 +46,13 @@ Options include default start screen, default task priority, default reminder, d
 
 Controls local task reminders and daily summaries. MyDo schedules notifications on the device; it provides no push, email, assignment, comment, or mention notifications.
 
+**Detailed reminder behavior defined in specs19-reminders.md:**
+- Task Reminders master toggle (requests POST_NOTIFICATIONS permission if enabling)
+- Default reminder type (At due time / 30 min before / 1 hour before / 1 day before / Custom)
+- Snooze duration (5/10/15/30/60 min)
+- Daily Summary toggle
+- Notification permission status (Granted/Denied with "Open Settings" action)
+
 ---
 
 # Appearance
@@ -64,6 +71,8 @@ Options may include daily goal, completed-task visibility, weekend visibility, s
 
 Data settings make the local database portable and recoverable.
 
+**Detailed export/import behavior defined in specs20-backup-export-import.md:**
+
 | Action | Result |
 |---|---|
 | Export local database | Creates a complete MyDo backup and opens the system save/share chooser. |
@@ -73,6 +82,8 @@ Data settings make the local database portable and recoverable.
 Exports include tasks, projects, sections, labels, filters, reminders, completion history, and preferences. They use a versioned format with integrity metadata. Export is manual and never uploads data.
 
 Before importing, MyDo validates the selected file. An invalid or unreadable file leaves the current local database unchanged. Replacing data requires a warning and, when possible, a fresh backup. A merge must not silently overwrite an existing edit; unresolved conflicts are reported.
+
+**Precautionary backup:** After a Replace import, the previous database is saved to app cache for 7 days. Settings → Data → **Restore previous backup** offers one-click rollback.
 
 ---
 
@@ -106,6 +117,15 @@ All controls expose descriptive labels, announce switch states, support keyboard
 - Sensitive local-data operations require confirmation.
 - Import and export are explicit file operations; neither happens automatically.
 - MyDo does not sign in, sign out, synchronize, upload, or connect to a MyDo server.
+
+---
+
+# Cross-References
+
+- **specs19-reminders.md** — Reminder scheduling, permission, default reminder, snooze duration
+- **specs20-backup-export-import.md** — Export/Import flow, validation, replace/merge, precautionary backup
+- **specs11-data-model.md** — Preferences entity
+- **specs09-notifications.md** — System notifications for import/export
 
 ---
 

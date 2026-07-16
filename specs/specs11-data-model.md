@@ -32,7 +32,8 @@ Local Database
 ├── Labels
 ├── Filters
 ├── Notifications
-└── Preferences
+├── Preferences
+└── Missed Reminders (local only)
 ```
 
 ---
@@ -113,7 +114,7 @@ Tasks and labels have a many-to-many relationship.
 | type | Enum |
 | enabled | Boolean |
 
-Reminders schedule local device notifications.
+Reminders schedule local device notifications. **Detailed scheduling behavior in specs19-reminders.md.**
 
 # Attachment
 
@@ -126,7 +127,7 @@ Reminders schedule local device notifications.
 | size | Integer |
 | localUri | URI |
 
-Attachments refer to locally accessible files; they are never uploaded by MyDo.
+Attachments refer to locally accessible files; they are never uploaded by MyDo. **SAF integration in specs21-platform-integration.md.**
 
 # Activity Event
 
@@ -152,11 +153,33 @@ Activity records local actions such as created, updated, completed, and deleted.
 
 Notification types are **Reminder** and **System** (for example, local database or import errors).
 
+# Missed Reminder (local only)
+
+| Property | Type |
+|---|---|
+| id | UUID |
+| reminderId | UUID |
+| missedAt | DateTime |
+| resolved | Boolean |
+
+Records reminders that failed to fire due to permission denial or process death. Resolved when user views missed reminders.
+
+# Preferences
+
+| Property | Type |
+|---|---|
+| key | String |
+| value | String (JSON) |
+
+Stores all user-configurable settings: general, notifications, appearance, productivity, privacy.
+
 ---
 
 # Local Database and Backup Format
 
 The database stores all listed entities plus preferences. A manual export creates a complete, versioned MyDo backup with integrity metadata. Import validates the format before creating, replacing, or merging local records. Imports neither contact a server nor create an account.
+
+**Backup format specification: specs20-backup-export-import.md**
 
 ---
 
@@ -173,6 +196,17 @@ The database stores all listed entities plus preferences. A manual export create
 # Data Validation and Performance
 
 IDs are immutable; required fields cannot be null; foreign keys reference existing records; dates use UTC internally; local presentation respects locale and time zone. The local database supports efficient indexes, partial updates, and datasets containing tens of thousands of tasks.
+
+---
+
+# Cross-References
+
+- **specs19-reminders.md** — Reminder scheduling, types, rescheduling
+- **specs20-backup-export-import.md** — Backup format, versioning, integrity, validation
+- **specs21-platform-integration.md** — SAF for attachments/backups, boot/update receivers
+- **specs15-attachments.md** — Attachment metadata, SAF URIs
+- **specs16-recurring-tasks.md** — Recurrence rules, reminder copying
+- **specs10-settings.md** — Preferences entity
 
 ---
 

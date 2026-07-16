@@ -19,11 +19,15 @@ Application
 ├── Search
 ├── Notifications
 ├── Productivity
-└── Settings
-    └── Data: Import / Export
+├── Settings
+│   └── Data: Import / Export
+├── App Shortcuts (launcher long-press)
+└── Home Screen Widgets
 ```
 
-Primary destinations are Inbox, Today, Upcoming, Projects, and Search. Notifications, Productivity, and Settings are secondary destinations. Detail screens and editors are contextual.
+Primary destinations are Inbox, Today, Upcoming, Projects, and Search. Notifications, Productivity, and Settings are secondary destinations. Detail screens and editors are contextual. App shortcuts and widgets provide direct access from the launcher and home screen.
+
+**App shortcuts and widgets detailed in specs21-platform-integration.md.**
 
 ---
 
@@ -92,3 +96,14 @@ Loading states represent opening or querying the local database. Empty states of
 # Accessibility and Consistency
 
 Navigation is usable by keyboard and assistive technology, provides semantic icon labels and visible focus, supports Android back gestures, and keeps focus order logical after transitions. Projects retain internal state when revisited, modal editors preserve the navigation stack, and completing a task returns to its originating list unless the user chooses otherwise.
+
+---
+
+# Cross-References
+
+- **specs19-reminders.md** — Reminder notification actions (Open task)
+- **specs20-backup-export-import.md** — Settings → Data navigation
+- **specs21-platform-integration.md** — App shortcuts, widgets, boot/update handling
+- **specs05-task-detail.md** — Task Detail navigation
+- **specs04-inbox.md** — Inbox navigation
+- **specs07-upcoming.md** — Upcoming navigation

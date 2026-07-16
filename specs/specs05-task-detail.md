@@ -517,6 +517,15 @@ Task Detail
 
 ---
 
+# Cross-References
+
+- **specs19-reminders.md** — Reminder Editor, notification actions (Open/Complete/Snooze)
+- **specs15-attachments.md** — Attachments section
+- **specs16-recurring-tasks.md** — Recurrence editor
+- **specs20-backup-export-import.md** — Task data in backup
+
+---
+
 # Success Criteria
 
 The Task Detail screen succeeds when users can:
