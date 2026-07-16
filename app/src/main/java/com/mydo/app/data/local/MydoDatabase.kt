@@ -8,6 +8,7 @@ import com.mydo.app.data.local.dao.FilterDao
 import com.mydo.app.data.local.dao.LabelDao
 import com.mydo.app.data.local.dao.NotificationDao
 import com.mydo.app.data.local.dao.ProjectDao
+import com.mydo.app.data.local.dao.RecentSearchDao
 import com.mydo.app.data.local.dao.ReminderDao
 import com.mydo.app.data.local.dao.SectionDao
 import com.mydo.app.data.local.dao.TaskDao
@@ -17,6 +18,7 @@ import com.mydo.app.data.local.entity.FilterEntity
 import com.mydo.app.data.local.entity.LabelEntity
 import com.mydo.app.data.local.entity.NotificationEntity
 import com.mydo.app.data.local.entity.ProjectEntity
+import com.mydo.app.data.local.entity.RecentSearchEntity
 import com.mydo.app.data.local.entity.ReminderEntity
 import com.mydo.app.data.local.entity.SectionEntity
 import com.mydo.app.data.local.entity.TaskEntity
@@ -35,8 +37,9 @@ import com.mydo.app.data.local.entity.TaskLabelCrossRef
         AttachmentEntity::class,
         ActivityEventEntity::class,
         NotificationEntity::class,
+        RecentSearchEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class MydoDatabase : RoomDatabase() {
@@ -50,4 +53,5 @@ abstract class MydoDatabase : RoomDatabase() {
     abstract fun attachmentDao(): AttachmentDao
     abstract fun activityEventDao(): ActivityEventDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun recentSearchDao(): RecentSearchDao
 }

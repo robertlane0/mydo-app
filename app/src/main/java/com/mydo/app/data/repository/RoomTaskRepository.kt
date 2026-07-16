@@ -1,5 +1,6 @@
 package com.mydo.app.data.repository
 
+import androidx.room.withTransaction
 import com.mydo.app.core.errors.AppResult
 import com.mydo.app.core.errors.DatabaseError
 import com.mydo.app.data.local.MydoDatabase
@@ -7,10 +8,13 @@ import com.mydo.app.data.local.entity.TaskEntity
 import com.mydo.app.data.local.mapper.toDomain
 import com.mydo.app.data.local.mapper.toEntity
 import com.mydo.app.data.local.mapper.toSummary
+import com.mydo.app.data.local.mapper.toUUID
 import com.mydo.app.data.local.mapper.toUUIDString
+import com.mydo.app.domain.model.Priority
 import com.mydo.app.domain.model.Task
 import com.mydo.app.domain.model.TaskSummary
 import com.mydo.app.domain.repository.TaskRepository
+import com.mydo.app.domain.search.TaskFilterContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -20,6 +24,8 @@ class RoomTaskRepository(private val db: MydoDatabase) : TaskRepository {
     private val dao = db.taskDao()
     private val labelDao = db.labelDao()
     private val projectDao = db.projectDao()
+    private val sectionDao = db.sectionDao()
+    private val attachmentDao = db.attachmentDao()
 
     private suspend fun mapToSummary(entity: TaskEntity): TaskSummary {
         val projectName = entity.projectId?.let { projectDao.getById(it)?.name }
@@ -53,10 +59,30 @@ class RoomTaskRepository(private val db: MydoDatabase) : TaskRepository {
         dao.observeById(id.toUUIDString()).map<TaskEntity?, AppResult<Task?>> { entity -> AppResult.Success(entity?.let { mapToDomain(it) }) }
             .catch { e -> emit(AppResult.Failure(DatabaseError("db_error", "Failed to load task", e))) }
 
+    override fun observeOverdue(nowUtcMillis: Long): Flow<AppResult<List<TaskSummary>>> =
+        dao.observeOverdue(nowUtcMillis).map<List<TaskEntity>, AppResult<List<TaskSummary>>> { list -> AppResult.Success(list.map { mapToSummary(it) }) }
+            .catch { e -> emit(AppResult.Failure(DatabaseError("db_error", "Failed to load overdue tasks", e))) }
+
+    override fun observeScheduledWindow(sinceUtcMillis: Long, untilUtcMillis: Long): Flow<AppResult<List<TaskSummary>>> =
+        dao.observeScheduledWindow(sinceUtcMillis, untilUtcMillis)
+            .map<List<TaskEntity>, AppResult<List<TaskSummary>>> { list -> AppResult.Success(list.map { mapToSummary(it) }) }
+            .catch { e -> emit(AppResult.Failure(DatabaseError("db_error", "Failed to load upcoming tasks", e))) }
+
     override suspend fun getById(id: UUID): AppResult<Task?> = try {
         AppResult.Success(dao.getById(id.toUUIDString())?.let { mapToDomain(it) })
     } catch (e: Exception) {
         AppResult.Failure(DatabaseError("db_error", "Failed to load task", e))
+    }
+
+    override suspend fun getByIds(ids: List<UUID>): AppResult<List<Task>> = try {
+        if (ids.isEmpty()) {
+            AppResult.Success(emptyList())
+        } else {
+            val entities = dao.getByIds(ids.map { it.toUUIDString() })
+            AppResult.Success(entities.map { mapToDomain(it) })
+        }
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to load tasks", e))
     }
 
     override suspend fun create(task: Task): AppResult<Unit> = try {
@@ -96,16 +122,39 @@ class RoomTaskRepository(private val db: MydoDatabase) : TaskRepository {
         AppResult.Failure(DatabaseError("db_error", "Failed to update task completion", e))
     }
 
+    override suspend fun updateDueDate(id: UUID, dueAtUtcMillis: Long?, updatedAtUtcMillis: Long): AppResult<Unit> = try {
+        dao.updateDueDate(id.toUUIDString(), dueAtUtcMillis, updatedAtUtcMillis)
+        AppResult.Success(Unit)
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to reschedule task", e))
+    }
+
+    override suspend fun updatePriority(id: UUID, priority: Priority, updatedAtUtcMillis: Long): AppResult<Unit> = try {
+        dao.updatePriority(id.toUUIDString(), priority.name, updatedAtUtcMillis)
+        AppResult.Success(Unit)
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to update priority", e))
+    }
+
+    override suspend fun updateRecurrence(id: UUID, recurringRule: String?, updatedAtUtcMillis: Long): AppResult<Unit> = try {
+        dao.updateRecurrence(id.toUUIDString(), recurringRule, updatedAtUtcMillis)
+        AppResult.Success(Unit)
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to update recurrence", e))
+    }
+
     override suspend fun moveToProject(id: UUID, projectId: UUID?, sectionId: UUID?, updatedAtUtcMillis: Long): AppResult<Unit> = try {
-        dao.moveToProject(id.toUUIDString(), projectId?.toUUIDString(), sectionId?.toUUIDString(), updatedAtUtcMillis)
-        val sortOrder = if (sectionId != null) {
-            dao.nextSectionSortOrder(sectionId.toUUIDString())
-        } else if (projectId != null) {
-            dao.nextProjectSortOrder(projectId.toUUIDString())
-        } else {
-            dao.nextInboxSortOrder()
+        db.withTransaction {
+            dao.moveToProject(id.toUUIDString(), projectId?.toUUIDString(), sectionId?.toUUIDString(), updatedAtUtcMillis)
+            val sortOrder = if (sectionId != null) {
+                dao.nextSectionSortOrder(sectionId.toUUIDString())
+            } else if (projectId != null) {
+                dao.nextProjectSortOrder(projectId.toUUIDString())
+            } else {
+                dao.nextInboxSortOrder()
+            }
+            dao.updateSortOrder(id.toUUIDString(), sortOrder)
         }
-        dao.updateSortOrder(id.toUUIDString(), sortOrder)
         AppResult.Success(Unit)
     } catch (e: Exception) {
         AppResult.Failure(DatabaseError("db_error", "Failed to move task", e))
@@ -123,5 +172,46 @@ class RoomTaskRepository(private val db: MydoDatabase) : TaskRepository {
         AppResult.Success(results)
     } catch (e: Exception) {
         AppResult.Failure(DatabaseError("db_error", "Failed to search tasks", e))
+    }
+
+    override suspend fun reorder(orderedIds: List<UUID>): AppResult<Unit> = try {
+        db.withTransaction {
+            orderedIds.forEachIndexed { index, id -> dao.updateSortOrder(id.toUUIDString(), index) }
+        }
+        AppResult.Success(Unit)
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to reorder tasks", e))
+    }
+
+    override suspend fun getFilterContexts(): AppResult<List<TaskFilterContext>> = try {
+        val tasks = dao.getAllSnapshot()
+        val projectNames = projectDao.getAllSnapshot().associate { it.id to it.name }
+        val sectionNames = sectionDao.getAllSnapshot().associate { it.id to it.name }
+        val labelNames = labelDao.getAllSnapshot().associate { it.id to it.name }
+        val taskLabelIds = labelDao.getAllTaskLabelCrossRefs().groupBy({ it.taskId }, { it.labelId })
+        val taskIdsWithAttachments = attachmentDao.getTaskIdsWithAttachments().toSet()
+        val parentIdsWithSubtasks = dao.getParentIdsWithSubtasks().toSet()
+
+        val contexts = tasks.map { entity ->
+            TaskFilterContext(
+                taskId = entity.id.toUUID(),
+                title = entity.title,
+                description = entity.description,
+                projectName = entity.projectId?.let { projectNames[it] },
+                sectionName = entity.sectionId?.let { sectionNames[it] },
+                labelNames = (taskLabelIds[entity.id].orEmpty()).mapNotNull { labelNames[it] }.map { it.lowercase() }.toSet(),
+                priority = Priority.valueOf(entity.priority),
+                dueAtUtcMillis = entity.dueAtUtcMillis,
+                completed = entity.completed,
+                createdAtUtcMillis = entity.createdAtUtcMillis,
+                updatedAtUtcMillis = entity.updatedAtUtcMillis,
+                recurring = entity.recurringRule != null,
+                hasAttachment = taskIdsWithAttachments.contains(entity.id),
+                hasSubtasks = parentIdsWithSubtasks.contains(entity.id),
+            )
+        }
+        AppResult.Success(contexts)
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to search", e))
     }
 }

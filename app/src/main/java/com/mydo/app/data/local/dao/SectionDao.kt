@@ -12,6 +12,12 @@ interface SectionDao {
     @Query("SELECT * FROM sections WHERE id = :id")
     suspend fun getById(id: String): SectionEntity?
 
+    @Query("SELECT * FROM sections ORDER BY sortOrder ASC")
+    suspend fun getAllSnapshot(): List<SectionEntity>
+
+    @Query("SELECT * FROM sections WHERE name LIKE '%' || :query || '%' ORDER BY name ASC LIMIT :limit")
+    suspend fun search(query: String, limit: Int = 20): List<SectionEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(section: SectionEntity)
 

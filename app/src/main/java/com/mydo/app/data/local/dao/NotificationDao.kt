@@ -29,4 +29,7 @@ interface NotificationDao {
 
     @Query("DELETE FROM notifications WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM notifications")
+    suspend fun clearAll()
 }

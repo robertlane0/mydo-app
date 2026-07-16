@@ -10,10 +10,17 @@ class TaskComposerViewModel(
     private val createTaskUseCase: CreateTaskUseCase
 ) : ViewModel() {
 
+    var presetDueAtUtcMillis: Long? = null
+    var presetProjectId: java.util.UUID? = null
+
     fun createTask(title: String) {
         if (title.isBlank()) return
+        val dueAtUtcMillis = presetDueAtUtcMillis
+        val projectId = presetProjectId
         viewModelScope.launch {
-            createTaskUseCase(title)
+            createTaskUseCase(title, projectId = projectId, dueAtUtcMillis = dueAtUtcMillis)
+            presetDueAtUtcMillis = null
+            presetProjectId = null
         }
     }
 

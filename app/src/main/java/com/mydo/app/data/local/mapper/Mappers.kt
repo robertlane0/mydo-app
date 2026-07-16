@@ -72,6 +72,9 @@ fun TaskEntity.toDomain(labels: List<LabelEntity> = emptyList(), subtaskCount: I
     priority = Priority.valueOf(priority),
     dueAtUtcMillis = dueAtUtcMillis,
     recurringRule = recurringRule,
+    recurrenceAnchorUtcMillis = recurrenceAnchorUtcMillis,
+    occurrenceNumber = occurrenceNumber,
+    previousOccurrenceTaskId = previousOccurrenceTaskId?.toUUID(),
     sortOrder = sortOrder,
     createdAtUtcMillis = createdAtUtcMillis,
     updatedAtUtcMillis = updatedAtUtcMillis,
@@ -92,6 +95,9 @@ fun Task.toEntity() = TaskEntity(
     priority = priority.name,
     dueAtUtcMillis = dueAtUtcMillis,
     recurringRule = recurringRule,
+    recurrenceAnchorUtcMillis = recurrenceAnchorUtcMillis,
+    occurrenceNumber = occurrenceNumber,
+    previousOccurrenceTaskId = previousOccurrenceTaskId?.toUUIDString(),
     sortOrder = sortOrder,
     createdAtUtcMillis = createdAtUtcMillis,
     updatedAtUtcMillis = updatedAtUtcMillis,
@@ -105,6 +111,20 @@ fun TaskEntity.toSummary(projectName: String? = null) = TaskSummary(
     priority = Priority.valueOf(priority),
     dueAtUtcMillis = dueAtUtcMillis,
     projectPath = projectName, // Could be enhanced to show project/section
+    recurring = recurringRule != null,
+    sortOrder = sortOrder,
+)
+
+fun RecentSearchEntity.toDomain() = RecentSearch(
+    id = id.toUUID(),
+    query = query,
+    searchedAtUtcMillis = searchedAtUtcMillis,
+)
+
+fun RecentSearch.toEntity() = RecentSearchEntity(
+    id = id.toUUIDString(),
+    query = query,
+    searchedAtUtcMillis = searchedAtUtcMillis,
 )
 
 fun FilterEntity.toDomain() = Filter(

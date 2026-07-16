@@ -38,4 +38,21 @@ data class TaskEntity(
     val createdAtUtcMillis: Long,
     val updatedAtUtcMillis: Long,
     val completedAtUtcMillis: Long?,
+    // Basis for "next occurrence after X" calculations. Ad-hoc rescheduling of the
+    // *current* occurrence (drag/date-picker) updates dueAtUtcMillis but intentionally
+    // leaves this untouched, matching specs16-recurring-tasks.md: "Weekly Monday task
+    // moved to Wednesday -> next still Monday". Null means "same as dueAtUtcMillis".
+    // Placed at the end with a default so existing positional TaskEntity(...) call
+    // sites (tests, etc.) predating step 4 keep compiling.
+    val recurrenceAnchorUtcMillis: Long? = null,
+    // 1-based position of this occurrence within its recurring series; compared against
+    // RRULE's COUNT=N to know when the series is exhausted.
+    val occurrenceNumber: Int = 1,
+    // Links a generated occurrence back to the task it was generated from, for history
+    // (specs16-recurring-tasks.md: "parentTaskId = completed task's ID (for history)").
+    // Deliberately a separate column from `parentTaskId`, which is reserved for the
+    // subtask hierarchy (CASCADE delete + countSubtasks()) — reusing it for recurrence
+    // would make each generated occurrence look like a subtask of its predecessor and
+    // would cascade-delete it when the predecessor is removed.
+    val previousOccurrenceTaskId: String? = null,
 )

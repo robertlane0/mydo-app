@@ -16,6 +16,7 @@ import java.util.UUID
 
 class RoomProjectRepository(private val db: MydoDatabase) : ProjectRepository {
     private val dao = db.projectDao()
+    private val taskDao = db.taskDao()
 
     override fun observeActive(): Flow<AppResult<List<Project>>> =
         dao.observeActive().map<List<ProjectEntity>, AppResult<List<Project>>> { list -> AppResult.Success(list.map { it.toDomain() }) }
@@ -65,5 +66,17 @@ class RoomProjectRepository(private val db: MydoDatabase) : ProjectRepository {
         AppResult.Success(Unit)
     } catch (e: Exception) {
         AppResult.Failure(DatabaseError("db_error", "Failed to reorder project", e))
+    }
+
+    override suspend fun search(query: String): AppResult<List<Project>> = try {
+        AppResult.Success(dao.search(query).map { it.toDomain() })
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to search projects", e))
+    }
+
+    override suspend fun countActiveTasks(projectId: UUID): AppResult<Int> = try {
+        AppResult.Success(taskDao.countActiveByProject(projectId.toUUIDString()))
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to count tasks", e))
     }
 }

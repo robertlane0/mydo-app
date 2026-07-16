@@ -15,4 +15,6 @@ interface ProjectRepository {
     suspend fun update(project: Project): AppResult<Unit>
     suspend fun delete(id: UUID): AppResult<Unit>
     suspend fun reorder(id: UUID, sortOrder: Int): AppResult<Unit>
+    suspend fun search(query: String): AppResult<List<Project>>
+    suspend fun countActiveTasks(projectId: UUID): AppResult<Int>
 }

@@ -13,6 +13,15 @@ interface LabelDao {
     @Query("SELECT * FROM labels WHERE id = :id")
     suspend fun getById(id: String): LabelEntity?
 
+    @Query("SELECT * FROM labels ORDER BY name ASC")
+    suspend fun getAllSnapshot(): List<LabelEntity>
+
+    @Query("SELECT * FROM labels WHERE name = :name COLLATE NOCASE LIMIT 1")
+    suspend fun findByName(name: String): LabelEntity?
+
+    @Query("SELECT * FROM task_labels")
+    suspend fun getAllTaskLabelCrossRefs(): List<TaskLabelCrossRef>
+
     @Query("SELECT l.* FROM labels l INNER JOIN task_labels tl ON l.id = tl.labelId WHERE tl.taskId = :taskId ORDER BY l.name ASC")
     fun observeByTask(taskId: String): Flow<List<LabelEntity>>
 
@@ -39,4 +48,7 @@ interface LabelDao {
 
     @Query("SELECT * FROM labels WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     suspend fun search(query: String): List<LabelEntity>
+
+    @Query("SELECT COUNT(*) FROM task_labels WHERE labelId = :labelId")
+    suspend fun countByLabel(labelId: String): Int
 }

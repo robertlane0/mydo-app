@@ -12,4 +12,5 @@ interface SectionRepository {
     suspend fun update(section: Section): AppResult<Unit>
     suspend fun delete(id: UUID): AppResult<Unit>
     suspend fun reorder(id: UUID, sortOrder: Int): AppResult<Unit>
+    suspend fun search(query: String): AppResult<List<Section>>
 }

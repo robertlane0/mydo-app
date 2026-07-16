@@ -162,3 +162,26 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_notifications_createdAtUtcMillis` ON `notifications` (`createdAtUtcMillis`)")
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Recurrence tracking (specs16-recurring-tasks.md): the anchor is the basis for
+        // "next occurrence" math and is left untouched by ad-hoc reschedules of the
+        // current occurrence; occurrenceNumber is compared against RRULE's COUNT=N.
+        db.execSQL("ALTER TABLE tasks ADD COLUMN recurrenceAnchorUtcMillis INTEGER")
+        db.execSQL("ALTER TABLE tasks ADD COLUMN occurrenceNumber INTEGER NOT NULL DEFAULT 1")
+        db.execSQL("ALTER TABLE tasks ADD COLUMN previousOccurrenceTaskId TEXT")
+
+        // Recent searches table (local search history, specs08-search.md)
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `recent_searches` (
+                `id` TEXT NOT NULL,
+                `query` TEXT NOT NULL,
+                `searchedAtUtcMillis` INTEGER NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+        """.trimIndent())
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_recent_searches_searchedAtUtcMillis` ON `recent_searches` (`searchedAtUtcMillis`)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_recent_searches_query` ON `recent_searches` (`query`)")
+    }
+}

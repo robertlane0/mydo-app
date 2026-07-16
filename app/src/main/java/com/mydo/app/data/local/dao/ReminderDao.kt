@@ -9,6 +9,9 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE taskId = :taskId ORDER BY triggerAtUtcMillis ASC")
     fun observeByTask(taskId: String): Flow<List<ReminderEntity>>
 
+    @Query("SELECT * FROM reminders WHERE taskId = :taskId ORDER BY triggerAtUtcMillis ASC")
+    suspend fun getByTaskSnapshot(taskId: String): List<ReminderEntity>
+
     @Query("SELECT * FROM reminders WHERE enabled = 1 AND triggerAtUtcMillis > :nowUtcMillis ORDER BY triggerAtUtcMillis ASC")
     fun observePending(nowUtcMillis: Long): Flow<List<ReminderEntity>>
 

@@ -24,6 +24,12 @@ interface ProjectDao {
     @Query("SELECT * FROM projects WHERE id = :id")
     suspend fun getById(id: String): ProjectEntity?
 
+    @Query("SELECT * FROM projects ORDER BY sortOrder ASC")
+    suspend fun getAllSnapshot(): List<ProjectEntity>
+
+    @Query("SELECT * FROM projects WHERE archived = 0 AND name LIKE '%' || :query || '%' ORDER BY name ASC LIMIT :limit")
+    suspend fun search(query: String, limit: Int = 20): List<ProjectEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(project: ProjectEntity)
 

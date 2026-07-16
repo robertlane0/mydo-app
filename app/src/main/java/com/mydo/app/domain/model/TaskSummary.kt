@@ -9,4 +9,6 @@ data class TaskSummary(
     val priority: Priority,
     val dueAtUtcMillis: Long?,
     val projectPath: String?,
+    val recurring: Boolean = false,
+    val sortOrder: Int = 0,
 )

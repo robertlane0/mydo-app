@@ -11,19 +11,28 @@ class CreateTaskUseCase(
     private val taskRepository: TaskRepository,
     private val timeProvider: TimeProvider,
 ) {
-    suspend operator fun invoke(title: String, projectId: UUID? = null): AppResult<Unit> {
+    suspend operator fun invoke(
+        title: String,
+        projectId: UUID? = null,
+        sectionId: UUID? = null,
+        dueAtUtcMillis: Long? = null,
+        priority: Priority = Priority.P4,
+    ): AppResult<Unit> {
         val now = timeProvider.nowUtcMillis()
         val task = Task(
             id = UUID.randomUUID(),
             projectId = projectId,
-            sectionId = null,
+            sectionId = sectionId,
             parentTaskId = null,
             title = title,
             description = "",
             completed = false,
-            priority = Priority.P4,
-            dueAtUtcMillis = null,
+            priority = priority,
+            dueAtUtcMillis = dueAtUtcMillis,
             recurringRule = null,
+            recurrenceAnchorUtcMillis = null,
+            occurrenceNumber = 1,
+            previousOccurrenceTaskId = null,
             sortOrder = 0,
             createdAtUtcMillis = now,
             updatedAtUtcMillis = now,

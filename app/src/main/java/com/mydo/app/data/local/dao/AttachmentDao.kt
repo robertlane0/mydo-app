@@ -15,6 +15,9 @@ interface AttachmentDao {
     @Query("SELECT COUNT(*) FROM attachments WHERE taskId = :taskId")
     suspend fun countByTask(taskId: String): Int
 
+    @Query("SELECT DISTINCT taskId FROM attachments")
+    suspend fun getTaskIdsWithAttachments(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(attachment: AttachmentEntity)
 

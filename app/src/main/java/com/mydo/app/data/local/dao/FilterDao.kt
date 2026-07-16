@@ -15,6 +15,15 @@ interface FilterDao {
     @Query("SELECT * FROM filters WHERE id = :id")
     suspend fun getById(id: String): FilterEntity?
 
+    @Query("SELECT * FROM filters WHERE name = :name COLLATE NOCASE LIMIT 1")
+    suspend fun findByName(name: String): FilterEntity?
+
+    @Query("SELECT * FROM filters WHERE name LIKE '%' || :query || '%' OR query LIKE '%' || :query || '%' ORDER BY name ASC LIMIT :limit")
+    suspend fun search(query: String, limit: Int = 20): List<FilterEntity>
+
+    @Query("SELECT COUNT(*) FROM filters")
+    suspend fun count(): Int
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(filter: FilterEntity)
 
