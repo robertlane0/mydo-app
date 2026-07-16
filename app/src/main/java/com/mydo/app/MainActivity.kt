@@ -14,6 +14,7 @@ import com.mydo.app.ui.components.TaskComposerViewModel
 import com.mydo.app.ui.home.HomeViewModel
 import com.mydo.app.ui.theme.MydoTheme
 import kotlinx.coroutines.flow.map
+import androidx.compose.runtime.remember
 
 class MainActivity : ComponentActivity() {
     private val container by lazy { (application as MydoApplication).container }
@@ -43,9 +44,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val settings by container.observeSettingsUseCase()
-                .map { (it as? AppResult.Success)?.value }
-                .collectAsState(initial = null)
+            // Wrap the Flow in remember so it is only created once
+            val settingsFlow = remember {
+                container.observeSettingsUseCase()
+                    .map { (it as? AppResult.Success)?.value }
+            }
+            
+            // Collect from the remembered Flow
+            val settings by settingsFlow.collectAsState(initial = null)
+            
             val themeMode = settings?.themeMode ?: ThemeMode.SYSTEM
             val useDynamicColor = settings?.useDynamicColor ?: true
 
