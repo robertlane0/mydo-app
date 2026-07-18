@@ -4,51 +4,24 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import androidx.core.app.NotificationManagerCompat
 
+/** Centralizes MyDo's single local notification channel (specs09-notifications.md covers
+ *  only reminder and system notices — there's no separate marketing/social channel to add). */
 object NotificationChannels {
-    const val REMINDERS = "reminders"
-    const val SYSTEM = "system"
-    const val DAILY_SUMMARY = "daily_summary"
+    const val REMINDERS_CHANNEL_ID = "reminders"
 
-    fun createChannels(context: Context) {
+    /** Idempotent — safe to call on every app start and right before posting a notification. */
+    fun ensureCreated(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val reminders = NotificationChannel(
-                REMINDERS,
-                "Task Reminders",
-                NotificationManager.IMPORTANCE_HIGH,
-            ).apply {
-                description = "Reminders for tasks with due dates"
-                setShowBadge(true)
-                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
-                enableVibration(true)
-                vibrationPattern = longArrayOf(0, 300, 200, 300)
-            }
-
-            val system = NotificationChannel(
-                SYSTEM,
-                "System Notifications",
-                NotificationManager.IMPORTANCE_DEFAULT,
-            ).apply {
-                description = "Important app messages (import errors, etc.)"
-                setShowBadge(true)
-            }
-
-            val daily = NotificationChannel(
-                DAILY_SUMMARY,
-                "Daily Summary",
-                NotificationManager.IMPORTANCE_LOW,
-            ).apply {
-                description = "Optional daily task summary"
-                setShowBadge(false)
-            }
-
-            manager.createNotificationChannels(listOf(reminders, system, daily))
+        if (manager.getNotificationChannel(REMINDERS_CHANNEL_ID) != null) return
+        val channel = NotificationChannel(
+            REMINDERS_CHANNEL_ID,
+            "Task reminders",
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = "Local reminders for tasks with a due date or a custom reminder time."
         }
-    }
-
-    fun areNotificationsEnabled(context: Context): Boolean {
-        return NotificationManagerCompat.from(context).areNotificationsEnabled()
+        manager.createNotificationChannel(channel)
     }
 }

@@ -21,8 +21,14 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE id = :id")
     suspend fun getById(id: String): ReminderEntity?
 
+    @Query("SELECT * FROM reminders ORDER BY triggerAtUtcMillis ASC")
+    suspend fun getAllSnapshot(): List<ReminderEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(reminder: ReminderEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(reminders: List<ReminderEntity>)
 
     @Update
     suspend fun update(reminder: ReminderEntity)
@@ -32,4 +38,7 @@ interface ReminderDao {
 
     @Query("DELETE FROM reminders WHERE taskId = :taskId")
     suspend fun deleteByTask(taskId: String)
+
+    @Query("DELETE FROM reminders")
+    suspend fun clearAll()
 }

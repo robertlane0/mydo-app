@@ -18,8 +18,14 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE id = :id")
     suspend fun getById(id: String): NotificationEntity?
 
+    @Query("SELECT * FROM notifications ORDER BY createdAtUtcMillis DESC")
+    suspend fun getAllSnapshot(): List<NotificationEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(notification: NotificationEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(notifications: List<NotificationEntity>)
 
     @Query("UPDATE notifications SET read = 1 WHERE id = :id")
     suspend fun markRead(id: String)

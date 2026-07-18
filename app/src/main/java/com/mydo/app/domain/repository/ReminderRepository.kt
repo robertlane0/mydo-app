@@ -8,6 +8,9 @@ import java.util.UUID
 interface ReminderRepository {
     fun observeByTask(taskId: UUID): Flow<AppResult<List<Reminder>>>
     suspend fun getByTask(taskId: UUID): AppResult<List<Reminder>>
+    /** Every enabled reminder still due in the future, across all tasks — used to re-arm
+     *  OS alarms after boot, app update, or a fresh notification-permission grant. */
+    suspend fun getAllPending(nowUtcMillis: Long): AppResult<List<Reminder>>
     suspend fun create(reminder: Reminder): AppResult<Unit>
     suspend fun update(reminder: Reminder): AppResult<Unit>
     suspend fun delete(id: UUID): AppResult<Unit>

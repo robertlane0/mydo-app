@@ -10,10 +10,28 @@ class ObserveTaskUseCase(private val taskRepository: TaskRepository) {
     operator fun invoke(taskId: UUID): Flow<AppResult<Task?>> = taskRepository.observeById(taskId)
 }
 
-class UpdateTaskUseCase(private val taskRepository: TaskRepository) {
-    suspend operator fun invoke(task: Task): AppResult<Unit> = taskRepository.update(task)
+/** Updates a task, then re-syncs its reminders' OS alarms (a retitle, for example, changes
+ *  the text a not-yet-fired reminder notification will show). */
+class UpdateTaskUseCase(
+    private val taskRepository: TaskRepository,
+    private val reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
+) {
+    suspend operator fun invoke(task: Task): AppResult<Unit> {
+        val result = taskRepository.update(task)
+        if (result is AppResult.Success) reminderAlarmCoordinator?.sync(task.id)
+        return result
+    }
 }
 
-class DeleteTaskUseCase(private val taskRepository: TaskRepository) {
-    suspend operator fun invoke(id: UUID): AppResult<Unit> = taskRepository.delete(id)
+/** Deletes a task. Any scheduled reminder alarms for it are cancelled first — the
+ *  `reminders` table's `ON DELETE CASCADE` from tasks removes the reminder rows as a side
+ *  effect of this delete, so they must be read and cancelled *before* the task is gone. */
+class DeleteTaskUseCase(
+    private val taskRepository: TaskRepository,
+    private val reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
+) {
+    suspend operator fun invoke(id: UUID): AppResult<Unit> {
+        reminderAlarmCoordinator?.cancelAll(id)
+        return taskRepository.delete(id)
+    }
 }

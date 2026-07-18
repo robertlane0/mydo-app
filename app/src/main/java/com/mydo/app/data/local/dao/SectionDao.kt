@@ -21,11 +21,17 @@ interface SectionDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(section: SectionEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(sections: List<SectionEntity>)
+
     @Update
     suspend fun update(section: SectionEntity)
 
     @Query("DELETE FROM sections WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM sections")
+    suspend fun clearAll()
 
     @Query("SELECT COALESCE(MAX(sortOrder), -1) + 1 FROM sections WHERE projectId = :projectId")
     suspend fun nextSortOrder(projectId: String): Int

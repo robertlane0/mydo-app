@@ -116,7 +116,7 @@ A saved local query that dynamically displays matching tasks.
 
 ## Reminder
 
-A locally scheduled notification associated with a task. **Detailed in specs19-reminders.md.**
+A locally scheduled notification associated with a task.
 
 ---
 
@@ -125,8 +125,6 @@ A locally scheduled notification associated with a task. **Detailed in specs19-r
 ## Local Storage and Data Portability
 
 Creates and maintains the on-device database and supports manual, validated import and export of complete backups.
-
-**Detailed in specs20-backup-export-import.md and specs21-platform-integration.md.**
 
 ## Task Management
 
@@ -143,8 +141,6 @@ Provides Today, Upcoming, calendar, and scheduling views.
 ## Notifications
 
 Provides local reminder notifications and preferences.
-
-**Detailed in specs09-notifications.md and specs19-reminders.md.**
 
 ## Search
 
@@ -182,8 +178,6 @@ All ordinary task actions read and write the local database immediately, includi
 - **Import:** From Settings, the user selects a MyDo backup. MyDo validates it before changing data, then offers a confirmed replacement of local data or a non-destructive merge when supported.
 - Import and export are always manual; no data is sent to a MyDo server.
 
-**Detailed in specs20-backup-export-import.md.**
-
 ---
 
 # Security
@@ -201,16 +195,3 @@ The application supports screen readers, dynamic text sizing, high-contrast them
 # Design Philosophy
 
 The interface emphasizes low visual clutter, fast task capture, predictable navigation, progressive disclosure, and consistent interaction patterns. Content takes precedence over decoration.
-
----
-
-# Cross-References
-
-- **specs19-reminders.md** — Reminder scheduling, permissions, actions
-- **specs20-backup-export-import.md** — Backup format, export/import flows, validation
-- **specs21-platform-integration.md** — Android shortcuts, widgets, SAF, boot/update handling
-- **specs09-notifications.md** — Notification types, system notifications
-- **specs11-data-model.md** — Entity definitions, relationships, backup format reference
-- **specs10-settings.md** — Settings structure, Data section, Notifications section
-- **specs15-attachments.md** — Attachments via SAF, backup metadata
-- **specs16-recurring-tasks.md** — Recurrence rules, reminder copying

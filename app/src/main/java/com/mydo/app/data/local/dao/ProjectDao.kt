@@ -33,11 +33,17 @@ interface ProjectDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(project: ProjectEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(projects: List<ProjectEntity>)
+
     @Update
     suspend fun update(project: ProjectEntity)
 
     @Query("DELETE FROM projects WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM projects")
+    suspend fun clearAll()
 
     @Query("SELECT COALESCE(MAX(sortOrder), -1) + 1 FROM projects")
     suspend fun nextSortOrder(): Int

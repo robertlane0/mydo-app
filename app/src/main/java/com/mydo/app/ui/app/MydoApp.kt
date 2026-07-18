@@ -71,10 +71,21 @@ fun MydoApp(
     taskComposerViewModel: TaskComposerViewModel,
     container: AppContainer,
     modifier: Modifier = Modifier,
+    /** Set when MyDo was opened from a reminder notification's tap target
+     *  (specs09-notifications.md, "Reminder Notifications" -> open). */
+    deepLinkTaskId: UUID? = null,
+    onDeepLinkConsumed: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     var showTaskComposer by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(deepLinkTaskId) {
+        deepLinkTaskId?.let { taskId ->
+            navController.navigate(Screen.TaskDetail.createRoute(taskId.toString()))
+            onDeepLinkConsumed()
+        }
+    }
 
     val unreadCount by androidx.compose.runtime.produceState(0) {
         container.observeUnreadNotificationCountUseCase().collect { result -> value = (result as? AppResult.Success)?.value ?: 0 }
@@ -221,7 +232,14 @@ fun MydoApp(
                 NotificationsScreen(vm, navController)
             }
             composable(Screen.Settings.route) {
-                val vm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory(container.observeSettingsUseCase, container.updateSettingUseCase))
+                val vm: SettingsViewModel = viewModel(
+                    factory = SettingsViewModel.Factory(
+                        container.observeSettingsUseCase, container.updateSettingUseCase,
+                        container.exportBackupUseCase, container.inspectBackupUseCase,
+                        container.importBackupUseCase, container.clearLocalDataUseCase,
+                        container.shareGateway, container.timeProvider,
+                    )
+                )
                 SettingsScreen(vm)
             }
             composable(Screen.TaskDetail.route) { backStackEntry ->

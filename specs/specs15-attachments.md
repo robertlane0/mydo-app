@@ -249,7 +249,7 @@ Bulk operations (specs17-bulk-operations.md) support:
 
 ## Attachments in Backup / Export
 
-Export (specs20-backup-export-import.md) includes attachment **metadata only**:
+Export (specs10-settings.md) includes attachment **metadata only**:
 - id, taskId, filename, mimeType, size, localUri
 
 **File content not included** (too large; user manages files separately).
@@ -259,8 +259,6 @@ Import:
 - Attempts to re-grant URI permission for each `localUri`
 - If file missing/permission denied: attachment imported as "broken" (shows warning icon)
 - User can re-attach from broken state
-
-**SAF integration details: specs21-platform-integration.md**
 
 ---
 

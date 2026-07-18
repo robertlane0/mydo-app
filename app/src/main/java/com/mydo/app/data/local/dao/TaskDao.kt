@@ -77,11 +77,17 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(task: TaskEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(tasks: List<TaskEntity>)
+
     @Update
     suspend fun update(task: TaskEntity)
 
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM tasks")
+    suspend fun clearAll()
 
     @Query("UPDATE tasks SET completed = :completed, completedAtUtcMillis = :completedAtUtcMillis, updatedAtUtcMillis = :updatedAtUtcMillis WHERE id = :id")
     suspend fun updateCompletion(id: String, completed: Boolean, completedAtUtcMillis: Long?, updatedAtUtcMillis: Long)

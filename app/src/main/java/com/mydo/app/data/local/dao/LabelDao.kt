@@ -31,17 +31,29 @@ interface LabelDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(label: LabelEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(labels: List<LabelEntity>)
+
     @Update
     suspend fun update(label: LabelEntity)
 
     @Query("DELETE FROM labels WHERE id = :id")
     suspend fun deleteById(id: String)
 
+    @Query("DELETE FROM labels")
+    suspend fun clearAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTaskLabel(crossRef: TaskLabelCrossRef)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllTaskLabels(crossRefs: List<TaskLabelCrossRef>)
+
     @Query("DELETE FROM task_labels WHERE taskId = :taskId AND labelId = :labelId")
     suspend fun deleteTaskLabel(taskId: String, labelId: String)
+
+    @Query("DELETE FROM task_labels")
+    suspend fun clearAllTaskLabels()
 
     @Query("DELETE FROM task_labels WHERE taskId = :taskId")
     suspend fun deleteAllTaskLabels(taskId: String)

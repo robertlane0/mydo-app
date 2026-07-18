@@ -28,6 +28,12 @@ class RoomReminderRepository(private val db: MydoDatabase) : ReminderRepository 
         AppResult.Failure(DatabaseError("db_error", "Failed to load reminders", e))
     }
 
+    override suspend fun getAllPending(nowUtcMillis: Long): AppResult<List<Reminder>> = try {
+        AppResult.Success(dao.getPending(nowUtcMillis).map { it.toDomain() })
+    } catch (e: Exception) {
+        AppResult.Failure(DatabaseError("db_error", "Failed to load pending reminders", e))
+    }
+
     override suspend fun create(reminder: Reminder): AppResult<Unit> = try {
         dao.insert(reminder.toEntity())
         AppResult.Success(Unit)

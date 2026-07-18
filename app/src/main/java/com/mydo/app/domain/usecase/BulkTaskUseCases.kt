@@ -64,8 +64,12 @@ class BulkCompleteTasksUseCase(
     taskRepository: TaskRepository,
     reminderRepository: ReminderRepository,
     timeProvider: TimeProvider,
+    reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
 ) {
-    private val completeTaskUseCase = CompleteTaskUseCase(taskRepository, reminderRepository, timeProvider)
+    private val completeTaskUseCase = CompleteTaskUseCase(
+        taskRepository, reminderRepository, timeProvider,
+        reminderAlarmCoordinator = reminderAlarmCoordinator,
+    )
 
     suspend operator fun invoke(taskIds: List<UUID>): AppResult<BulkActionOutcome> {
         val snapshot = mutableListOf<Task>()
@@ -84,10 +88,16 @@ class BulkCompleteTasksUseCase(
 }
 
 /** specs17, "Delete": destructive, no automated undo — the confirmation dialog *is* the safeguard. */
-class BulkDeleteTasksUseCase(private val taskRepository: TaskRepository) {
+class BulkDeleteTasksUseCase(
+    private val taskRepository: TaskRepository,
+    private val reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
+) {
     suspend operator fun invoke(taskIds: List<UUID>): AppResult<Int> {
         var deleted = 0
         for (id in taskIds) {
+            // Cancel first: ON DELETE CASCADE removes the reminder rows as a side effect
+            // of the task delete below.
+            reminderAlarmCoordinator?.cancelAll(id)
             when (taskRepository.delete(id)) {
                 is AppResult.Failure -> Unit // best-effort: continue deleting the rest
                 is AppResult.Success -> deleted++
@@ -98,10 +108,19 @@ class BulkDeleteTasksUseCase(private val taskRepository: TaskRepository) {
 }
 
 /** Reverses Move/Priority/Due Date/Complete bulk actions (specs17, "Undo Scope"). */
-class UndoBulkTaskOperationUseCase(private val taskRepository: TaskRepository) {
+class UndoBulkTaskOperationUseCase(
+    private val taskRepository: TaskRepository,
+    private val reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
+) {
     suspend operator fun invoke(outcome: BulkActionOutcome): AppResult<Unit> {
-        outcome.generatedOccurrenceIds.forEach { taskRepository.delete(it) }
-        outcome.snapshot.forEach { taskRepository.update(it) }
+        outcome.generatedOccurrenceIds.forEach { id ->
+            reminderAlarmCoordinator?.cancelAll(id)
+            taskRepository.delete(id)
+        }
+        outcome.snapshot.forEach { task ->
+            taskRepository.update(task)
+            reminderAlarmCoordinator?.sync(task.id)
+        }
         return AppResult.Success(Unit)
     }
 }

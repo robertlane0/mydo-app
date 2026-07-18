@@ -325,7 +325,7 @@ Edge cases:
 - Completing a recurring task with `COUNT` reached: marks complete, **no next generated**
 - Completing a recurring task past `UNTIL`: marks complete, **no next generated**
 - Recurring tasks can have subtasks; subtasks **not** recurring by default
-- Recurring tasks can have reminders; reminders copied to next occurrence. **See specs19-reminders.md for scheduling details.**
+- Recurring tasks can have reminders; reminders copied to next occurrence
 - Recurring tasks can have attachments; attachments **not** copied (user re-attaches)
 - Parent task completion does not auto-complete subtasks
 - Deleting project with recurring tasks: confirms disposition per task (move/delete series)

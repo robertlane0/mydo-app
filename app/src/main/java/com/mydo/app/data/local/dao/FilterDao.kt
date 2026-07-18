@@ -24,12 +24,21 @@ interface FilterDao {
     @Query("SELECT COUNT(*) FROM filters")
     suspend fun count(): Int
 
+    @Query("SELECT * FROM filters ORDER BY name ASC")
+    suspend fun getAllSnapshot(): List<FilterEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(filter: FilterEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(filters: List<FilterEntity>)
 
     @Update
     suspend fun update(filter: FilterEntity)
 
     @Query("DELETE FROM filters WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM filters")
+    suspend fun clearAll()
 }

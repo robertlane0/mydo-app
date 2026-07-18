@@ -24,6 +24,7 @@ class CompleteTaskUseCase(
     private val reminderRepository: ReminderRepository,
     private val timeProvider: TimeProvider,
     private val zoneId: ZoneId = ZoneId.systemDefault(),
+    private val reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
 ) {
     /** [generatedTask] is non-null iff a next occurrence was created; the caller offers Undo either way. */
     data class Outcome(val completedTask: Task, val generatedTask: Task?)
@@ -41,6 +42,8 @@ class CompleteTaskUseCase(
             is AppResult.Success -> Unit
         }
         val completedTask = existing.copy(completed = true, completedAtUtcMillis = now, updatedAtUtcMillis = now)
+        // The task is done, so any of its still-armed reminder alarms are no longer relevant.
+        reminderAlarmCoordinator?.cancelAll(existing.id)
 
         val rawRule = existing.recurringRule ?: return AppResult.Success(Outcome(completedTask, null))
         val generated = generateNextOccurrence(existing, rawRule, now)
@@ -50,6 +53,7 @@ class CompleteTaskUseCase(
                 is AppResult.Success -> Unit
             }
             copyReminders(existing.id, generated.id, generated.dueAtUtcMillis, existing.dueAtUtcMillis)
+            reminderAlarmCoordinator?.sync(generated.id)
         }
         return AppResult.Success(Outcome(completedTask, generated))
     }
@@ -113,19 +117,25 @@ class CompleteTaskUseCase(
 class UndoCompleteTaskUseCase(
     private val taskRepository: TaskRepository,
     private val timeProvider: TimeProvider,
+    private val reminderAlarmCoordinator: ReminderAlarmCoordinator? = null,
 ) {
     suspend operator fun invoke(outcome: CompleteTaskUseCase.Outcome): AppResult<Unit> {
         outcome.generatedTask?.let { generated ->
+            // Cancel first: the reminders table's ON DELETE CASCADE from tasks will remove
+            // the generated occurrence's reminder rows as a side effect of this delete.
+            reminderAlarmCoordinator?.cancelAll(generated.id)
             when (val result = taskRepository.delete(generated.id)) {
                 is AppResult.Failure -> return result
                 is AppResult.Success -> Unit
             }
         }
-        return taskRepository.updateCompletion(
+        val result = taskRepository.updateCompletion(
             outcome.completedTask.id,
             completed = false,
             completedAtUtcMillis = null,
             updatedAtUtcMillis = timeProvider.nowUtcMillis(),
         )
+        if (result is AppResult.Success) reminderAlarmCoordinator?.sync(outcome.completedTask.id)
+        return result
     }
 }

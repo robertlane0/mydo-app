@@ -407,14 +407,6 @@ Inbox
 
 ---
 
-# Cross-References
-
-- **specs19-reminders.md** — Reminder configuration in Task Composer
-- **specs15-attachments.md** — Attachments in Task Composer
-- **specs21-platform-integration.md** — App shortcuts launching Task Composer
-
----
-
 # Success Criteria
 
 The Inbox succeeds when users can:
