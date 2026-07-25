@@ -154,12 +154,16 @@ lines, file naming) are left enabled and were run to a clean pass:
 - Fixed unused imports in `LabelsViewModel.kt`, `MainActivity.kt`, `domain/model/SearchResult.kt`.
 - Fixed import ordering in half a dozen files (`Pickers.kt`, `MydoBottomSheet.kt`,
   `SettingsScreen.kt`, `MainActivity.kt`, `AppContainer.kt`).
-- Renamed `ui/navigation/Screens.kt` → `Screen.kt` and `ui/theme/Spacing.kt` → `MydoSpacing.kt`
-  to match their single top-level declaration (filename only; package and class names, and
-  therefore every import, are unchanged, so this is a zero-risk rename).
 - Wrapped a handful of overlong lines in code touched this pass; left two long Room `@Query`
   SQL strings in `TaskDao.kt` as single-line string concatenation rather than restructuring
   working query text.
+- `Screens.kt` (declares `Screen`) and `Spacing.kt` (declares `MydoSpacing`) don't match
+  ktlint's filename convention. An earlier version of this pass renamed them to match — safe
+  in principle, since Kotlin resolves imports by package + class name, never by filename —
+  but it caused a real build failure downstream (see "Post-audit" below) because a
+  zip/patch-based delivery can't delete the old file from an existing checkout, leaving both
+  the old and new file declaring the same top-level symbol. Reverted; `ktlint_standard_filename`
+  is disabled in `.editorconfig` instead, with the reasoning recorded there.
 
 `ktlint app/src/**/*.kt` now exits 0 (no findings) under the new `.editorconfig`.
 
@@ -213,6 +217,23 @@ real bugs.
 
 This doesn't change the recommendation above: run a full local build before relying on this,
 since this environment still can't compile the project directly.
+
+**Second round:** the next build attempt failed with `Redeclaration: Screen` /
+`Redeclaration: MydoSpacing`. Cause: this pass had renamed `Screens.kt` → `Screen.kt` and
+`Spacing.kt` → `MydoSpacing.kt` purely to satisfy ktlint's filename-convention rule. That
+rename is safe *in the repository this was developed against*, but delivery here happens as a
+zip applied on top of an existing checkout — and a zip can only add or overwrite files, never
+delete one that's no longer present in the archive. So the old file stayed on disk alongside
+the new one, and both declared the same top-level symbol. Reverted the rename; the filename
+rule is now disabled in `.editorconfig` instead (with the reasoning recorded there), so this
+class of risk doesn't get reintroduced by a future automated lint fix either.
+
+**Third round:** a clean `./gradlew build lint test` run compiled and passed, surfacing only
+warnings (no errors): an unused variable in `CompleteTaskUseCase.kt` (pre-existing), and
+deprecation notices for `Divider` → `HorizontalDivider` (`Pickers.kt`, `SearchScreen.kt`,
+`TaskDetailScreen.kt` — the last pre-existing) and `Icons.Filled.ArrowBack` →
+`Icons.AutoMirrored.Filled.ArrowBack` (`ProjectDetailScreen.kt`). All fixed; re-ran ktlint
+afterward to confirm the fixes didn't introduce new findings.
 
 ## Files touched
 

@@ -48,7 +48,7 @@ class CompleteTaskUseCase(
         val rawRule = existing.recurringRule ?: return AppResult.Success(Outcome(completedTask, null))
         val generated = generateNextOccurrence(existing, rawRule, now)
         if (generated != null) {
-            when (val createResult = taskRepository.create(generated)) {
+            when (taskRepository.create(generated)) {
                 is AppResult.Failure -> return AppResult.Success(Outcome(completedTask, null)) // spec: log + toast, task stays complete
                 is AppResult.Success -> Unit
             }

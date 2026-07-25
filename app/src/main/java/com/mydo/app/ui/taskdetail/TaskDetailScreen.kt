@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -182,7 +182,7 @@ fun TaskDetailScreen(taskViewModel: TaskDetailViewModel, onBack: () -> Unit) {
                         }
                     }
 
-                    item { Divider() }
+                    item { HorizontalDivider() }
 
                     item {
                         SectionHeader("Labels") { showLabelsDialog = true }
@@ -192,7 +192,7 @@ fun TaskDetailScreen(taskViewModel: TaskDetailViewModel, onBack: () -> Unit) {
                         }
                     }
 
-                    item { Divider() }
+                    item { HorizontalDivider() }
 
                     item {
                         SectionHeader("Reminders") { showReminderDialog = true }
@@ -205,7 +205,7 @@ fun TaskDetailScreen(taskViewModel: TaskDetailViewModel, onBack: () -> Unit) {
                         if (state.reminders.isEmpty()) Text("No reminders", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
-                    item { Divider() }
+                    item { HorizontalDivider() }
 
                     item {
                         SectionHeader("Attachments") { documentPickerLauncher.launch(arrayOf("*/*")) }
@@ -218,7 +218,7 @@ fun TaskDetailScreen(taskViewModel: TaskDetailViewModel, onBack: () -> Unit) {
                         if (state.attachments.isEmpty()) Text("No attachments", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
-                    item { Divider() }
+                    item { HorizontalDivider() }
 
                     item {
                         TextButton(onClick = { showDeleteConfirm = true }) {
