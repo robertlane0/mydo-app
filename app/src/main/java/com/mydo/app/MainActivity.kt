@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val taskComposerViewModel: TaskComposerViewModel by viewModels {
-        TaskComposerViewModel.Factory(container.createTaskUseCase)
+        TaskComposerViewModel.Factory(container.createTaskUseCase, container.deleteTaskUseCase)
     }
 
     /** Set by [handleIntent] when MyDo is opened from a reminder notification's tap target. */

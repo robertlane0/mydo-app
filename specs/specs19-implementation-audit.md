@@ -190,6 +190,30 @@ Being transparent about what this pass did *not* attempt, so it isn't mistaken f
   APIs, so nothing there should be broken, but the new ViewModels have no unit test coverage
   of their own yet.
 
+## Post-audit: first real build results
+
+The caveat above — "nothing here was verified by compiling" — was not theoretical. A local
+`./gradlew build` surfaced two real compile errors on the first attempt, both now fixed:
+
+- **`MainActivity.kt`: `TaskComposerViewModel.Factory` missing `deleteTaskUseCase`.**
+  `TaskComposerViewModel`'s constructor and `Factory` were changed to take a
+  `deleteTaskUseCase` (needed for Quick Add's Undo action), but the direct `Factory(...)`
+  call site in `MainActivity.kt` was missed and still passed only one argument.
+- **`MydoApp.kt`: `Unresolved reference: padding`.** `Modifier.padding(paddingValues)` was
+  used on the `NavHost` without importing `androidx.compose.foundation.layout.padding`.
+
+Both are now fixed. The verification method used before delivery (grepping for capitalized,
+i.e. type-shaped, identifiers against imports) didn't catch either — the first is a
+call-site/constructor mismatch, not an import problem, and the second is a lowercase
+extension-function import the earlier heuristic never checked. The check has since been
+redone properly (every dotted call, not just capitalized ones) across all files touched in
+this pass; it surfaced a couple of additional candidates (`weight`, `align`) that traced back
+to correct `RowScope`/`BoxScope` member-extension usage inside the right lexical scope, not
+real bugs.
+
+This doesn't change the recommendation above: run a full local build before relying on this,
+since this environment still can't compile the project directly.
+
 ## Files touched
 
 Use `git diff` / `git log` against this repository for the authoritative list; at a summary
