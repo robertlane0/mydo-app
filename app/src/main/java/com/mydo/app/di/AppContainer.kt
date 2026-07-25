@@ -6,9 +6,9 @@ import com.mydo.app.core.errors.ErrorReporter
 import com.mydo.app.core.errors.LogcatErrorReporter
 import com.mydo.app.core.time.SystemTimeProvider
 import com.mydo.app.core.time.TimeProvider
-import com.mydo.app.data.local.MydoDatabase
 import com.mydo.app.data.local.MIGRATION_1_2
 import com.mydo.app.data.local.MIGRATION_2_3
+import com.mydo.app.data.local.MydoDatabase
 import com.mydo.app.data.repository.RoomAttachmentRepository
 import com.mydo.app.data.repository.RoomBackupRepository
 import com.mydo.app.data.repository.RoomFilterRepository
@@ -97,6 +97,7 @@ class AppContainer(context: Context) {
     // -- Task use cases --
     val createTaskUseCase = CreateTaskUseCase(taskRepository, timeProvider)
     val observeInboxTasks = ObserveInboxTasksUseCase(taskRepository)
+    val observeTodayTasksUseCase = ObserveTodayTasksUseCase(taskRepository, timeProvider)
     val observeActiveProjectsUseCase = ObserveActiveProjectsUseCase(projectRepository)
     val observeTaskUseCase = ObserveTaskUseCase(taskRepository)
     val updateTaskUseCase = UpdateTaskUseCase(taskRepository, reminderAlarmCoordinator)
@@ -135,6 +136,23 @@ class AppContainer(context: Context) {
 
     // -- Upcoming --
     val observeUpcomingUseCase = ObserveUpcomingUseCase(taskRepository, timeProvider)
+
+    // -- Projects & sections (specs06-projects.md) --
+    val observeArchivedProjectsUseCase = ObserveArchivedProjectsUseCase(projectRepository)
+    val observeProjectUseCase = ObserveProjectUseCase(projectRepository)
+    val observeProjectTasksUseCase = ObserveProjectTasksUseCase(taskRepository)
+    val createProjectUseCase = CreateProjectUseCase(projectRepository, timeProvider)
+    val updateProjectUseCase = UpdateProjectUseCase(projectRepository, timeProvider)
+    val setProjectArchivedUseCase = SetProjectArchivedUseCase(projectRepository, timeProvider)
+    val toggleProjectFavoriteUseCase = ToggleProjectFavoriteUseCase(projectRepository, timeProvider)
+    val countActiveTasksInProjectUseCase = CountActiveTasksInProjectUseCase(projectRepository)
+    val deleteProjectUseCase = DeleteProjectUseCase(projectRepository)
+    val reorderProjectsUseCase = ReorderProjectsUseCase(projectRepository)
+    val observeSectionsUseCase = ObserveSectionsUseCase(sectionRepository)
+    val createSectionUseCase = CreateSectionUseCase(sectionRepository)
+    val renameSectionUseCase = RenameSectionUseCase(sectionRepository)
+    val deleteSectionUseCase = DeleteSectionUseCase(sectionRepository)
+    val reorderSectionsUseCase = ReorderSectionsUseCase(sectionRepository)
 
     // -- Search --
     val searchUseCase = SearchUseCase(taskRepository, projectRepository, sectionRepository, labelRepository, filterRepository)

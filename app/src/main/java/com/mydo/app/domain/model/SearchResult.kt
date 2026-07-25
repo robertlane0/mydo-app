@@ -1,7 +1,5 @@
 package com.mydo.app.domain.model
 
-import java.util.UUID
-
 /**
  * A single ranked entry in search results. [rank] is lower-is-better and follows the
  * priority order from specs08-search.md ("Result Ranking"): exact match, prefix match,

@@ -17,7 +17,7 @@ class CreateTaskUseCase(
         sectionId: UUID? = null,
         dueAtUtcMillis: Long? = null,
         priority: Priority = Priority.P4,
-    ): AppResult<Unit> {
+    ): AppResult<Task> {
         val now = timeProvider.nowUtcMillis()
         val task = Task(
             id = UUID.randomUUID(),
@@ -39,8 +39,11 @@ class CreateTaskUseCase(
             completedAtUtcMillis = null,
             labels = emptyList(),
             subtaskCount = 0,
-            completedSubtaskCount = 0
+            completedSubtaskCount = 0,
         )
-        return taskRepository.create(task)
+        return when (val result = taskRepository.create(task)) {
+            is AppResult.Failure -> result
+            is AppResult.Success -> AppResult.Success(task)
+        }
     }
 }

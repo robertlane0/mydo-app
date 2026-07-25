@@ -10,7 +10,6 @@ import com.mydo.app.domain.usecase.DeleteLabelUseCase
 import com.mydo.app.domain.usecase.ObserveLabelsUseCase
 import com.mydo.app.domain.usecase.UpdateLabelUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

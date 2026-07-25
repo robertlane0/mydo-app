@@ -31,12 +31,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.mydo.app.domain.model.Label
 import com.mydo.app.domain.model.Priority
 import com.mydo.app.domain.model.Project
 import com.mydo.app.domain.model.SortMode
 import com.mydo.app.ui.components.BulkActionBar
 import com.mydo.app.ui.components.DragHandle
 import com.mydo.app.ui.components.DueDatePickerDialog
+import com.mydo.app.ui.components.LabelMultiSelectDialog
 import com.mydo.app.ui.components.MydoEmptyState
 import com.mydo.app.ui.components.MydoErrorState
 import com.mydo.app.ui.components.MydoLoadingState
@@ -56,6 +58,8 @@ fun InboxScreen(
     homeViewModel: HomeViewModel,
     navController: NavController,
     availableProjects: List<Project> = emptyList(),
+    availableLabels: List<Label> = emptyList(),
+    onAddTask: () -> Unit = {},
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -65,6 +69,7 @@ fun InboxScreen(
     var showPriorityDialog by remember { mutableStateOf(false) }
     var showDueDateDialog by remember { mutableStateOf(false) }
     var showMoveDialog by remember { mutableStateOf(false) }
+    var showLabelDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(homeViewModel) {
         homeViewModel.events.collect { event ->
@@ -97,7 +102,7 @@ fun InboxScreen(
                     onSetPriority = { showPriorityDialog = true },
                     onSetDueDate = { showDueDateDialog = true },
                     onMove = { showMoveDialog = true },
-                    onAddLabels = { /* labels are managed from Task Detail; bulk-label picker omitted here for now */ },
+                    onAddLabels = { showLabelDialog = true },
                     onDelete = { homeViewModel.bulkDelete() },
                     onCancel = { homeViewModel.clearSelection() },
                 )
@@ -125,7 +130,7 @@ fun InboxScreen(
                             title = "No tasks yet",
                             message = "Add a task to start capturing local work.",
                             actionLabel = "Add a task",
-                            onAction = { },
+                            onAction = onAddTask,
                             modifier = Modifier.fillMaxSize(),
                         )
                     } else {
@@ -201,6 +206,13 @@ fun InboxScreen(
             onDismiss = { showMoveDialog = false },
             onSelectInbox = { homeViewModel.bulkMove(null, null); showMoveDialog = false },
             onSelectProject = { homeViewModel.bulkMove(it.id, null); showMoveDialog = false },
+        )
+    }
+    if (showLabelDialog) {
+        LabelMultiSelectDialog(
+            labels = availableLabels,
+            onDismiss = { showLabelDialog = false },
+            onConfirm = { labelIds -> homeViewModel.bulkAddLabels(labelIds); showLabelDialog = false },
         )
     }
 }

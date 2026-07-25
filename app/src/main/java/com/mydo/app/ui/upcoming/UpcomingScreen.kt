@@ -3,14 +3,12 @@ package com.mydo.app.ui.upcoming
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
@@ -31,10 +29,12 @@ import com.mydo.app.ui.components.DueDatePickerDialog
 import com.mydo.app.ui.components.MydoEmptyState
 import com.mydo.app.ui.components.MydoErrorState
 import com.mydo.app.ui.components.MydoLoadingState
+import com.mydo.app.ui.components.MydoSnackbarController
 import com.mydo.app.ui.components.MydoTaskRow
-import com.mydo.app.ui.components.TaskComposerViewModel
 import com.mydo.app.ui.theme.MydoSpacing
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -43,12 +43,26 @@ import java.util.UUID
 @Composable
 fun UpcomingScreen(
     viewModel: UpcomingViewModel,
-    composerViewModel: TaskComposerViewModel,
     navController: NavController,
     onRequestAddTask: (presetDueAtUtcMillis: Long) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var rescheduleTaskId by remember { mutableStateOf<UUID?>(null) }
+    var rescheduleTaskDueAt by remember { mutableStateOf<Long?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is UpcomingEvent.TaskCompleted -> {
+                    MydoSnackbarController.show(
+                        message = "Task completed",
+                        actionLabel = "Undo",
+                        onAction = { viewModel.undoComplete(event.outcome) },
+                    )
+                }
+            }
+        }
+    }
 
     when (val state = uiState) {
         UpcomingUiState.Loading -> MydoLoadingState(message = "Loading your schedule\u2026", modifier = Modifier.fillMaxSize())
@@ -58,8 +72,11 @@ fun UpcomingScreen(
                 MydoEmptyState(
                     title = "Nothing scheduled",
                     message = "Tasks with due dates will show up here.",
-                    actionLabel = null,
-                    onAction = {},
+                    actionLabel = "Add a task",
+                    onAction = {
+                        val todayNoon = LocalDate.now().atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                        onRequestAddTask(todayNoon)
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
                 return
@@ -83,7 +100,12 @@ fun UpcomingScreen(
                 if (state.overdue.isNotEmpty()) {
                     item { GroupHeader(title = "Overdue", isOverdue = true) }
                     items(state.overdue, key = { "overdue-${it.id}" }) { task ->
-                        UpcomingTaskRow(task, navController) { rescheduleTaskId = task.id }
+                        UpcomingTaskRow(
+                            task = task,
+                            navController = navController,
+                            onCompletionToggle = { viewModel.completeTask(task.id) },
+                            onLongClick = { rescheduleTaskId = task.id; rescheduleTaskDueAt = task.dueAtUtcMillis },
+                        )
                     }
                 }
                 state.days.forEach { day ->
@@ -91,11 +113,16 @@ fun UpcomingScreen(
                         GroupHeader(
                             title = dayLabel(day.date),
                             isOverdue = false,
-                            onAdd = { onRequestAddTask(day.date.atTime(12, 0).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()) },
+                            onAdd = { onRequestAddTask(day.date.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) },
                         )
                     }
                     items(day.tasks, key = { "d-${day.date}-${it.id}" }) { task ->
-                        UpcomingTaskRow(task, navController) { rescheduleTaskId = task.id }
+                        UpcomingTaskRow(
+                            task = task,
+                            navController = navController,
+                            onCompletionToggle = { viewModel.completeTask(task.id) },
+                            onLongClick = { rescheduleTaskId = task.id; rescheduleTaskDueAt = task.dueAtUtcMillis },
+                        )
                     }
                 }
             }
@@ -104,21 +131,27 @@ fun UpcomingScreen(
 
     rescheduleTaskId?.let { taskId ->
         DueDatePickerDialog(
-            initialDateUtcMillis = null,
-            onDismiss = { rescheduleTaskId = null },
+            initialDateUtcMillis = rescheduleTaskDueAt,
+            onDismiss = { rescheduleTaskId = null; rescheduleTaskDueAt = null },
             onConfirm = { millis ->
                 if (millis != null) {
-                    val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
-                    viewModel.reschedule(taskId, date)
+                    val date = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    viewModel.reschedule(taskId, date, rescheduleTaskDueAt)
                 }
                 rescheduleTaskId = null
+                rescheduleTaskDueAt = null
             },
         )
     }
 }
 
 @Composable
-private fun UpcomingTaskRow(task: TaskSummary, navController: NavController, onLongClick: () -> Unit) {
+private fun UpcomingTaskRow(
+    task: TaskSummary,
+    navController: NavController,
+    onCompletionToggle: () -> Unit,
+    onLongClick: () -> Unit,
+) {
     MydoTaskRow(
         title = task.title,
         completed = task.completed,
@@ -126,7 +159,7 @@ private fun UpcomingTaskRow(task: TaskSummary, navController: NavController, onL
         metadata = task.projectPath,
         onClick = { navController.navigate("taskDetail/${task.id}") },
         onLongClick = onLongClick,
-        onCompletionToggle = { },
+        onCompletionToggle = onCompletionToggle,
         modifier = Modifier.padding(horizontal = MydoSpacing.screenMargin),
     )
 }

@@ -22,4 +22,5 @@ Please open the specs folder to view the full specifications of this app.
     specs16-recurring-tasks.md
     specs17-bulk-operations.md
     specs18-drag-reorder.md
+    specs19-implementation-audit.md
 

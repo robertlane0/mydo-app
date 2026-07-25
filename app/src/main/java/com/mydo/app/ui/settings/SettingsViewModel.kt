@@ -42,9 +42,11 @@ sealed interface SettingsUiState {
 sealed interface DataOperationState {
     data object Idle : DataOperationState
     data object InProgress : DataOperationState
+
     /** Export finished; [json] is ready to be written wherever the user picks via the
      *  system save chooser. */
     data class ExportReady(val json: String, val suggestedFilename: String) : DataOperationState
+
     /** A chosen file passed validation; only [ImportStrategy.REPLACE] is offered — MyDo
      *  doesn't yet support merge import, so there's no conflict-resolution step. */
     data class ImportPreview(val rawJson: String, val manifest: BackupManifest) : DataOperationState

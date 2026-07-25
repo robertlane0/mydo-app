@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
@@ -22,13 +23,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.mydo.app.domain.model.Label
 import com.mydo.app.domain.model.Priority
 import com.mydo.app.domain.model.Project
 import com.mydo.app.ui.theme.LocalPriorityColors
@@ -38,9 +42,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-
+import java.util.UUID
 
 @Composable
 fun priorityColor(priority: Priority): Color = LocalPriorityColors.current.colorFor(priority)
@@ -185,6 +187,53 @@ fun ProjectPickerDialog(
             }
         },
         confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+/**
+ * Multi-select label picker used by the bulk "Add Labels" toolbar action
+ * (specs17-bulk-operations.md, "Add Labels"). Selections are additive only — this dialog
+ * never removes an existing label, matching the spec's "Add Labels" (not "Set Labels").
+ */
+@Composable
+fun LabelMultiSelectDialog(
+    labels: List<Label>,
+    onDismiss: () -> Unit,
+    onConfirm: (List<UUID>) -> Unit,
+) {
+    var selected by remember { mutableStateOf(setOf<UUID>()) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add labels") },
+        text = {
+            if (labels.isEmpty()) {
+                Text("No labels yet. Create one from the Labels screen first.")
+            } else {
+                LazyColumn {
+                    items(labels, key = { it.id }) { label ->
+                        val isSelected = selected.contains(label.id)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selected = if (isSelected) selected - label.id else selected + label.id
+                                }
+                                .padding(vertical = MydoSpacing.small),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(checked = isSelected, onCheckedChange = null)
+                            Text(label.name, modifier = Modifier.padding(start = MydoSpacing.small))
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(selected.toList()) }, enabled = selected.isNotEmpty()) {
+                Text("Add")
+            }
+        },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }

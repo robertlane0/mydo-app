@@ -5,14 +5,14 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +24,6 @@ import com.mydo.app.ui.home.HomeViewModel
 import com.mydo.app.ui.theme.MydoTheme
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.remember
 import java.util.UUID
 
 class MainActivity : ComponentActivity() {
@@ -74,10 +73,10 @@ class MainActivity : ComponentActivity() {
                 container.observeSettingsUseCase()
                     .map { (it as? AppResult.Success)?.value }
             }
-            
+
             // Collect from the remembered Flow
             val settings by settingsFlow.collectAsState(initial = null)
-            
+
             val themeMode = settings?.themeMode ?: ThemeMode.SYSTEM
             val useDynamicColor = settings?.useDynamicColor ?: true
 

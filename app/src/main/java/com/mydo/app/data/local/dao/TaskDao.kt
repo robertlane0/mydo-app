@@ -14,7 +14,10 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis < :endOfDayUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC")
     fun observeToday(endOfDayUtcMillis: Long): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis >= :startUtcMillis AND dueAtUtcMillis < :endUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC")
+    @Query(
+        "SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis >= :startUtcMillis " +
+            "AND dueAtUtcMillis < :endUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC",
+    )
     fun observeByDateRange(startUtcMillis: Long, endUtcMillis: Long): Flow<List<TaskEntity>>
 
     @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis < :nowUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC")
@@ -23,7 +26,10 @@ interface TaskDao {
     // Upcoming timeline: every scheduled (non-subtask) task from a rolling start point
     // forward. The ViewModel widens `sinceUtcMillis`'s window as the user scrolls,
     // which keeps this a single indexed query instead of a full table scan.
-    @Query("SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis >= :sinceUtcMillis AND dueAtUtcMillis < :untilUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC")
+    @Query(
+        "SELECT * FROM tasks WHERE dueAtUtcMillis IS NOT NULL AND dueAtUtcMillis >= :sinceUtcMillis " +
+            "AND dueAtUtcMillis < :untilUtcMillis AND parentTaskId IS NULL AND completed = 0 ORDER BY dueAtUtcMillis ASC, sortOrder ASC",
+    )
     fun observeScheduledWindow(sinceUtcMillis: Long, untilUtcMillis: Long): Flow<List<TaskEntity>>
 
     @Query("SELECT * FROM tasks WHERE projectId = :projectId AND parentTaskId IS NULL AND completed = 0 ORDER BY sortOrder ASC")

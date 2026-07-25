@@ -13,50 +13,80 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.mydo.app.domain.model.RecentSearch
 import com.mydo.app.domain.model.SearchResult
 import com.mydo.app.ui.components.MydoEmptyState
 import com.mydo.app.ui.components.MydoErrorState
 import com.mydo.app.ui.components.MydoTaskRow
 import com.mydo.app.ui.navigation.Screen
 import com.mydo.app.ui.theme.MydoSpacing
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 fun SearchScreen(viewModel: SearchViewModel, navController: NavController) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it; viewModel.onQueryChange(it) },
-            placeholder = { Text("Search tasks, projects, labels\u2026") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(MydoSpacing.screenMargin),
-        )
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is SearchEvent.TaskCompleted -> {
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar("Task completed", actionLabel = "Undo", withDismissAction = true)
+                        if (result == SnackbarResult.ActionPerformed) viewModel.undoComplete(event.outcome)
+                    }
+                }
+            }
+        }
+    }
 
-        when (val state = uiState) {
-            is SearchUiState.Idle -> RecentSearchesList(
-                recent = state.recentSearches,
-                onSelect = { text = it; viewModel.onQueryChange(it) },
-                onRemove = viewModel::removeRecentSearch,
-                onClearAll = viewModel::clearRecentSearches,
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it; viewModel.onQueryChange(it) },
+                placeholder = { Text("Search tasks, projects, labels\u2026") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(MydoSpacing.screenMargin),
             )
-            SearchUiState.Searching -> Unit
-            is SearchUiState.Error -> MydoErrorState(title = "Search failed", message = state.message, modifier = Modifier.fillMaxSize())
-            is SearchUiState.Results -> {
-                if (state.results.isEmpty) {
-                    MydoEmptyState(title = "No results", message = "Try a different search term.", modifier = Modifier.fillMaxSize())
-                } else {
-                    SearchResultsList(state.results.let { r -> r.tasks + r.projects + r.sections + r.labels + r.filters }, navController)
+
+            when (val state = uiState) {
+                is SearchUiState.Idle -> RecentSearchesList(
+                    recent = state.recentSearches,
+                    onSelect = { text = it; viewModel.onQueryChange(it) },
+                    onRemove = viewModel::removeRecentSearch,
+                    onClearAll = viewModel::clearRecentSearches,
+                )
+                SearchUiState.Searching -> Unit
+                is SearchUiState.Error -> MydoErrorState(title = "Search failed", message = state.message, modifier = Modifier.fillMaxSize())
+                is SearchUiState.Results -> {
+                    if (state.results.isEmpty) {
+                        MydoEmptyState(title = "No results", message = "Try a different search term.", modifier = Modifier.fillMaxSize())
+                    } else {
+                        SearchResultsList(
+                            items = state.results.let { r -> r.tasks + r.projects + r.sections + r.labels + r.filters },
+                            navController = navController,
+                            onCompleteTask = viewModel::completeTask,
+                        )
+                    }
                 }
             }
         }
@@ -65,7 +95,7 @@ fun SearchScreen(viewModel: SearchViewModel, navController: NavController) {
 
 @Composable
 private fun RecentSearchesList(
-    recent: List<com.mydo.app.domain.model.RecentSearch>,
+    recent: List<RecentSearch>,
     onSelect: (String) -> Unit,
     onRemove: (String) -> Unit,
     onClearAll: () -> Unit,
@@ -91,10 +121,10 @@ private fun RecentSearchesList(
 }
 
 @Composable
-private fun SearchResultsList(items: List<SearchResult>, navController: NavController) {
+private fun SearchResultsList(items: List<SearchResult>, navController: NavController, onCompleteTask: (UUID) -> Unit) {
     LazyColumn(contentPadding = PaddingValues(vertical = MydoSpacing.small)) {
         items(items, key = { resultKey(it) }) { result ->
-            SearchResultRow(result, navController)
+            SearchResultRow(result, navController, onCompleteTask)
             Divider()
         }
     }
@@ -109,7 +139,7 @@ private fun resultKey(result: SearchResult): String = when (result) {
 }
 
 @Composable
-private fun SearchResultRow(result: SearchResult, navController: NavController) {
+private fun SearchResultRow(result: SearchResult, navController: NavController, onCompleteTask: (UUID) -> Unit) {
     when (result) {
         is SearchResult.TaskResult -> MydoTaskRow(
             title = result.task.title,
@@ -117,18 +147,18 @@ private fun SearchResultRow(result: SearchResult, navController: NavController) 
             priority = result.task.priority,
             metadata = result.task.projectPath,
             onClick = { navController.navigate("taskDetail/${result.task.id}") },
-            onCompletionToggle = {},
+            onCompletionToggle = { onCompleteTask(result.task.id) },
             modifier = Modifier.padding(horizontal = MydoSpacing.screenMargin),
         )
         is SearchResult.ProjectResult -> SimpleResultRow(
             title = result.project.name,
             subtitle = "Project \u00b7 ${result.taskCount} active",
-            onClick = { navController.navigate(Screen.Projects.route) },
+            onClick = { navController.navigate(Screen.ProjectDetail.createRoute(result.project.id.toString())) },
         )
         is SearchResult.SectionResult -> SimpleResultRow(
             title = result.section.name,
             subtitle = "Section in ${result.projectName}",
-            onClick = { navController.navigate(Screen.Projects.route) },
+            onClick = { navController.navigate(Screen.ProjectDetail.createRoute(result.section.projectId.toString())) },
         )
         is SearchResult.LabelResult -> SimpleResultRow(
             title = result.label.name,

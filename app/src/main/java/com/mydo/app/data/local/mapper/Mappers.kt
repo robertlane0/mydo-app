@@ -113,6 +113,7 @@ fun TaskEntity.toSummary(projectName: String? = null) = TaskSummary(
     projectPath = projectName, // Could be enhanced to show project/section
     recurring = recurringRule != null,
     sortOrder = sortOrder,
+    sectionId = sectionId?.toUUID(),
 )
 
 fun RecentSearchEntity.toDomain() = RecentSearch(

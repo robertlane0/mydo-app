@@ -11,4 +11,6 @@ data class TaskSummary(
     val projectPath: String?,
     val recurring: Boolean = false,
     val sortOrder: Int = 0,
+    /** Null for tasks with no project, or for tasks in a project but not in any section. */
+    val sectionId: UUID? = null,
 )
