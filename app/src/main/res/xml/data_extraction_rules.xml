@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MyDo is local-only (specs02-authentication.md): nothing syncs or uploads, and
+  android:allowBackup="false" already disables cloud/ADB backup. This file covers the one
+  thing allowBackup doesn't: Android 12+'s separate device-to-device transfer pathway.
+  Excluding the whole data root from both keeps that consistent.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+    </device-transfer>
+</data-extraction-rules>

@@ -235,6 +235,37 @@ deprecation notices for `Divider` → `HorizontalDivider` (`Pickers.kt`, `Search
 `Icons.AutoMirrored.Filled.ArrowBack` (`ProjectDetailScreen.kt`). All fixed; re-ran ktlint
 afterward to confirm the fixes didn't introduce new findings.
 
+## Android Lint
+
+A separate `./gradlew lint` pass (distinct from ktlint, which only checks style) reported 0
+errors and 23 warnings. Three were genuine, low-risk issues, now fixed:
+
+- **`ObsoleteSdkInt`** in `NotificationChannels.kt`: a `Build.VERSION.SDK_INT < Build.VERSION_CODES.O`
+  guard that can never be true, since the app's `minSdk` is already 26 (`O`). Removed the dead
+  branch and the now-unused `Build` import.
+- **`UnusedResources`**: `R.color.ic_launcher_background` was declared but never referenced —
+  the launcher icon drawable hardcodes the same hex value directly instead. Removed.
+- **`DataExtractionRules`**: `android:allowBackup="false"` only ever covered cloud/ADB backup;
+  Android 12 introduced a separate device-to-device transfer pathway that isn't governed by
+  `allowBackup` at all. Added `res/xml/data_extraction_rules.xml` excluding the whole data
+  root from both cloud backup and device transfer, and referenced it via
+  `android:dataExtractionRules` — closing an actual (if minor) gap in the app's local-only
+  stance (specs02-authentication.md), not just silencing a warning.
+
+The remaining 20 warnings were deliberately left alone:
+
+- **`OldTargetApi`** (`targetSdk = 34`) and **17× `GradleDependency`** (newer versions
+  available for Room, Navigation, Lifecycle, Compose activity, coroutines, and several test
+  dependencies) are pre-existing version choices. Bumping a `targetSdk` or a dependency major
+  version can change runtime behavior (edge-to-edge enforcement, permission changes, API
+  removals) in ways that need real device/emulator testing to catch — exactly what this
+  environment can't do. Recommended as a follow-up with proper testing, not bundled into this
+  pass.
+- **`KaptUsageInsteadOfKsp`**: migrating Room's annotation processor from kapt to KSP touches
+  the plugin and dependency declarations in `app/build.gradle.kts` and is exactly the kind of
+  toolchain change that's easy to get subtly wrong without a compiler to check it against.
+  kapt currently works; left as a recommended follow-up rather than risked here.
+
 ## Files touched
 
 Use `git diff` / `git log` against this repository for the authoritative list; at a summary
